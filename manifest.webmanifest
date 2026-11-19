@@ -1,6 +1,6 @@
 {
-  "name": "Sultanlar Ligi · Sayı videoları",
-  "short_name": "Sayı videoları",
+  "name": "Sultanlar Ligi · Sayı ve dig videoları",
+  "short_name": "Sayı ve dig",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

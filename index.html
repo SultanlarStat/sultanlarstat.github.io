@@ -4,10 +4,10 @@
 <base target="_blank">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sultanlar Ligi · Sayı videoları</title>
-<meta name="description" content="Vodafone Sultanlar Ligi: oyuncuların hücum sayısı, blok sayısı ve Ace'lerinin videoları, o ralliden başlayarak.">
-<meta property="og:title" content="Sultanlar Ligi · Sayı videoları">
-<meta property="og:description" content="Takım, maç ve oyuncu seç; oyuncunun sayı aldığı ralliler videoda o andan başlar.">
+<title>Sultanlar Ligi · Sayı ve dig videoları</title>
+<meta name="description" content="Vodafone Sultanlar Ligi: oyuncuların hücum sayısı, blok sayısı, Ace ve dig'lerinin videoları, o ralliden başlayarak.">
+<meta property="og:title" content="Sultanlar Ligi · Sayı ve dig videoları">
+<meta property="og:description" content="Takım, maç ve oyuncu seç; oyuncunun sayıları ve dig'leri videoda o andan başlar.">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@SultanlarStat">
 <meta name="theme-color" content="#000000">
@@ -17,13 +17,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sayı videoları">
+<meta name="apple-mobile-web-app-title" content="Sayı ve dig">
 <script data-goatcounter="https://sultanlarstat.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <script async src="https://www.youtube.com/iframe_api"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14'/%3E%3Cg fill='none' stroke='%23f5b301' stroke-width='4' stroke-linecap='round'%3E%3Ccircle cx='32' cy='32' r='24'/%3E%3Cpath d='M32 8c-5 9-5 19 0 24M32 32c10 1 18-3 23-11M32 32c-4 9-13 14-23 13'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root { --bg:#000; --fg:#eef0f3; --mute:#9aa1ad; --line:#262a31; --card:#111318; --card2:#181b21; --acc:#f5b301;
-          --link:#7cb7ff; --hit:#7cb7ff; --blk:#2dd4bf; --ace:#f5b301; }
+          --link:#7cb7ff; --hit:#7cb7ff; --blk:#2dd4bf; --ace:#f5b301; --dig:#c4a1ff; }
   * { box-sizing: border-box; }
   html, body { margin:0; background:var(--bg); color:var(--fg);
                font:15px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -128,7 +128,7 @@
   .row.on { box-shadow:inset 3px 0 0 var(--acc); }
   .row .who { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tag { font-size:12px; font-weight:700; }
-  .t-Hücum { color:var(--hit); } .t-Blok { color:var(--blk); } .t-Ace { color:var(--ace); }
+  .t-Hücum { color:var(--hit); } .t-Blok { color:var(--blk); } .t-Ace { color:var(--ace); } .t-Dig { color:var(--dig); }
   .row a { font-size:13px; }
   .muted { color:var(--mute); font-size:13px; }
   .msg { padding:30px 0; text-align:center; color:var(--mute); }
@@ -150,7 +150,7 @@
       </svg>
       <div>
         <div class="kicker">Vodafone Sultanlar Ligi</div>
-        <h1>Sayı videoları</h1>
+        <h1>Sayı ve dig videoları</h1>
       </div>
       <a class="x" href="https://x.com/SultanlarStat" title="X'te @SultanlarStat">
         <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8.1-9.3L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.1 3.9H5.1L17.7 20Z"/></svg>
@@ -168,6 +168,7 @@
     <label><input type="checkbox" value="Hücum" checked> Hücum</label>
     <label><input type="checkbox" value="Blok" checked> Blok</label>
     <label><input type="checkbox" value="Ace" checked> Ace</label>
+    <label title="Mükemmel ve iyi dig (kurtarma); ralli kaybedilmiş olabilir"><input type="checkbox" value="Dig" checked> Dig</label>
   </div>
 
   <details class="info">
@@ -209,7 +210,8 @@
   <div class="novideo" id="novideo"></div>
   <div id="list"><div class="msg">Yükleniyor…</div></div>
 
-  <footer>Kaynak: VolleyStation kaydı (hücum sayısı, blok sayısı, Ace), TRT Spor ve TVF Voleybol TV'nin YouTube
+  <footer>Kaynak: VolleyStation kaydı (hücum sayısı, blok sayısı, Ace; dig: istatistiği tutanın mükemmel ya da iyi
+    notu verdiği kurtarmalar, ralli kaybedilmiş olabilir), TRT Spor ve TVF Voleybol TV'nin YouTube
     yayınları. Videosuna ulaşamadığımız maçlarda "video yok" yazar. Görüş ve öneriler için
     <a href="https://x.com/SultanlarStat">@SultanlarStat</a>.</footer>
 </div>
@@ -270,6 +272,12 @@ function players() {
   opts($('pl'), [['', 'Bütün oyuncular'], ...list.map(([p, c]) => [p, `${p} (${c})`])], true);
 }
 
+// "48 sayı · 30 dig" (dig sayı değil, ayrı sayılır)
+function counts(rows) {
+  const d = rows.filter(r => r.tur === 'Dig').length, n = rows.length - d;
+  return [n ? `${n} sayı` : '', d ? `${d} dig` : ''].filter(Boolean).join(' · ') || '0 sayı';
+}
+
 // videodaki saniye, ziyaretçinin başlangıç ayarıyla
 const sec = r => Math.max(r.saniye + OFF, 0);
 
@@ -280,7 +288,7 @@ function render() {
   const types = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
   SHOWN = ROWS.filter(r => r.takim === team && (!m || r.mac_id === m) && (!p || r.oyuncu === p) && types.includes(r.tur));
   const vid = SHOWN.filter(r => r.saniye !== null).length;
-  $('summary').textContent = `${SHOWN.length} sayı · ${vid} tanesinin videosu var`;
+  $('summary').textContent = `${counts(SHOWN)} · ${vid} tanesinin videosu var`;
   if (!SHOWN.length) { $('list').innerHTML = '<div class="msg">Bu seçimde sayı yok.</div>'; return; }
   let html = '', last = null;
   SHOWN.forEach((r, i) => {
@@ -348,7 +356,7 @@ function finish() {                       // listenin sonu: kararır, ses kısı
   if (FINISHED) return;
   FINISHED = true;
   const p = $('pl').value;
-  $('endinfo').textContent = `${p || $('team').value} · ${SHOWN.filter(x => x.saniye !== null).length} sayı`;
+  $('endinfo').textContent = `${p || $('team').value} · ${counts(SHOWN.filter(x => x.saniye !== null))}`;
   $('fade').classList.add('on'); $('endcard').classList.add('on'); $('cap').classList.remove('on');
   clearTimeout(FADE_T);
   if (VOL === null && YTP && YTP.getVolume) VOL = YTP.getVolume();
@@ -463,7 +471,7 @@ fetch('sayi_videolari.json?v=' + Date.now(), {cache: 'no-store'})
   .then(d => {
     ROWS = expand(d);
     const u = new Date(d.guncelleme);
-    $('sub').textContent = `Takım, maç ve oyuncu seç; hücum sayısı, blok sayısı ve Ace'lerin listesi gelir. ` +
+    $('sub').textContent = `Takım, maç ve oyuncu seç; hücum sayısı, blok sayısı, Ace ve dig'lerin listesi gelir. ` +
       `Satıra tıklayınca video o ralliden başlar, Önceki / Sonraki ile sayılar arasında geçilir. ` +
       `Son güncelleme ${u.toLocaleDateString('tr-TR')} ${u.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}.`;
     teams(); matches(); players(); render();
