@@ -76,8 +76,8 @@
                              .ctl { width:100%; justify-content:space-between; } }
   .player iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
   /* geçiş: siyaha inme / açılma ve sol altta sayının bilgisi (oynatıcının üstünde, tıklamayı engellemez) */
-  .frame .fade { position:absolute; inset:0; background:#000; opacity:0; transition:opacity .45s; pointer-events:none; z-index:2; }
-  .frame .fade.on { opacity:1; }
+  .frame .fade { position:absolute; inset:0; background:#000; opacity:0; transition:opacity .8s; pointer-events:none; z-index:2; }
+  .frame .fade.on { opacity:1; transition:opacity 1s; }
   .frame .cap { position:absolute; left:14px; bottom:118px; max-width:calc(100% - 28px); padding:7px 12px; z-index:3;
                 background:rgba(0,0,0,.72); border-left:3px solid var(--acc); border-radius:4px; color:#fff;
                 opacity:0; transform:translateY(6px); transition:opacity .4s, transform .4s; pointer-events:none; }
@@ -296,7 +296,7 @@ function rampVolume(to, ms, done) {
 function reveal() {
   if (!$('fade').classList.contains('on')) return;
   $('fade').classList.remove('on');
-  if (VOL !== null) { rampVolume(VOL, 400); VOL = null; }
+  if (VOL !== null) { rampVolume(VOL, 800); VOL = null; }
   clearTimeout(FADE_T);
 }
 function caption(r) {
@@ -310,10 +310,10 @@ function go(r) {
   if (!playing) { load(r.video, sec(r)); caption(r); return; }
   $('fade').classList.add('on');
   if (VOL === null && YTP.getVolume) VOL = YTP.getVolume();
-  rampVolume(0, 450, () => {
+  rampVolume(0, 1000, () => setTimeout(() => {          // 1 sn kararma + kısa siyah an, sonra yeni sayı
     load(r.video, sec(r)); caption(r);
     clearTimeout(FADE_T); FADE_T = setTimeout(reveal, 2000);   // telefon otomatik başlatmazsa siyah kalmasın
-  });
+  }, 250));
 }
 
 function fitList() {
@@ -343,7 +343,8 @@ function play(i) {
 }
 
 // Sırayla oynat: ralli bitince sıradaki sayıya geç. Kayıttaki bitiş anı videoya tam oturmuyor (3 sn sonra geçmek
-// sayıyı kesiyordu, kullanıcı gördü): bitiş + 8 sn; ralli en az 12, en çok 45 sn sayılır
+// sayıyı kesiyordu, kullanıcı gördü); yayındaki tekrar da görünsün diye bitiş + 20 sn (8 sn'de tekrar başlarken
+// kesiliyordu); ralli en az 12, en çok 45 sn sayılır
 let AUTO = true;
 try { AUTO = localStorage.getItem('auto') !== '0'; } catch (e) {}
 $('auto').checked = AUTO;
@@ -352,7 +353,7 @@ setInterval(() => {
   if (!AUTO || !YTP || !YTP.getCurrentTime || CUR < 0) return;
   const r = SHOWN[CUR];
   if (!r || YTP.getPlayerState() !== 1 || (YTP.getVideoData() || {}).video_id !== r.video) return;
-  const end = sec(r) + Math.min(Math.max((r.bitis ?? r.saniye + 15) - r.saniye, 12), 45) + 8;
+  const end = sec(r) + Math.min(Math.max((r.bitis ?? r.saniye + 15) - r.saniye, 12), 45) + 20;
   if (YTP.getCurrentTime() >= end) step(1);
 }, 500);
 
