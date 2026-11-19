@@ -12,6 +12,7 @@
 <meta name="twitter:site" content="@SultanlarStat">
 <meta name="theme-color" content="#000000">
 <script data-goatcounter="https://sultanlarstat.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script async src="https://www.youtube.com/iframe_api"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14'/%3E%3Cg fill='none' stroke='%23f5b301' stroke-width='4' stroke-linecap='round'%3E%3Ccircle cx='32' cy='32' r='24'/%3E%3Cpath d='M32 8c-5 9-5 19 0 24M32 32c10 1 18-3 23-11M32 32c-4 9-13 14-23 13'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root { --bg:#000; --fg:#eef0f3; --mute:#9aa1ad; --line:#262a31; --card:#111318; --card2:#181b21; --acc:#f5b301;
@@ -141,7 +142,7 @@
   </details>
 
   <div class="player" id="player" hidden>
-    <div class="frame"><iframe id="yt" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe></div>
+    <div class="frame"><div id="yt"></div></div>
     <div class="bar"><span id="now"></span>
       <span class="ctl">
         <span class="offset" title="Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)">Yayın gecikmesi
@@ -248,6 +249,24 @@ function render() {
   });
 }
 
+// YouTube oynatıcısı bir kez kurulur, sonra sadece video / saniye değişir (IFrame API): yeniden yüklenmez, telefonda
+// ilk videoda bir kez oynata basıldıktan sonra sonrakiler kendiliğinden başlar
+let YTP = null, YT_READY = false, PENDING = null;
+window.onYouTubeIframeAPIReady = () => { YT_READY = true; if (PENDING) load(...PENDING); };
+
+function load(video, start) {
+  if (!YT_READY) { PENDING = [video, start]; return; }
+  if (!YTP) {
+    YTP = new YT.Player('yt', {videoId: video, playerVars: {start, autoplay: 1, rel: 0, playsinline: 1,
+                                                              origin: location.origin},
+                               events: {onReady: e => e.target.playVideo()}});
+    return;
+  }
+  const cur = YTP.getVideoData && YTP.getVideoData().video_id;
+  if (cur === video) { YTP.seekTo(start, true); YTP.playVideo(); }
+  else YTP.loadVideoById({videoId: video, startSeconds: start});
+}
+
 function fitList() {
   // oynatıcı + aradaki özet satırları: listenin üstüne kadar olan yükseklik
   if (!$('player').hidden) document.documentElement.style.setProperty('--ph', ($('list').offsetTop - $('player').offsetTop) + 'px');
@@ -261,7 +280,7 @@ function play(i) {
   $('player').hidden = false;
   document.body.classList.add('playing');
   fitList();
-  $('yt').src = `https://www.youtube.com/embed/${r.video}?start=${sec(r)}&autoplay=1&rel=0`;
+  load(r.video, sec(r));
   $('now').textContent = `${r.oyuncu} · ${r.set}. set ${r.skor} · ${r.tur}`;
   gc('izle/' + r.oyuncu);
   document.querySelectorAll('.row.on').forEach(e => e.classList.remove('on'));
