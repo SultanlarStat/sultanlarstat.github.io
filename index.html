@@ -43,9 +43,11 @@
            background:var(--card); color:var(--fg); }
   .types { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:6px 0 10px; font-size:14px; }
   .types label { display:inline-flex; gap:5px; align-items:center; color:var(--fg); font-size:14px; margin:0; }
-  .offset { margin-left:auto; display:inline-flex; gap:6px; align-items:center; font-size:13px; color:var(--mute); }
+  .offset { display:inline-flex; gap:5px; align-items:center; font-size:13px; color:var(--mute); white-space:nowrap; }
   .offset button { padding:3px 9px; font-size:13px; }
-  .offset b { color:var(--fg); min-width:44px; text-align:center; }
+  .offset b { color:var(--fg); min-width:40px; text-align:center; }
+  .ctl { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; justify-content:flex-end; margin-left:auto; }
+  .nav { white-space:nowrap; }
   button { padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card2); color:var(--fg);
            font-size:14px; cursor:pointer; }
   button:hover { border-color:#3a404a; }
@@ -67,8 +69,9 @@
   .player .frame { position:relative; width:min(100%, calc(55vh * 16 / 9)); margin:0 auto; aspect-ratio:16/9;
                    background:#000; border-radius:10px; overflow:hidden; border:1px solid var(--line); }
   .player .bar { width:min(100%, calc(55vh * 16 / 9)); margin-left:auto; margin-right:auto; }
-  .player .bar > span:last-child { flex:none; white-space:nowrap; }
-  @media (max-width:640px) { .player .bar button { padding:5px 9px; font-size:13px; } }
+  .player .bar { flex-wrap:wrap; }
+  @media (max-width:640px) { .player .bar button { padding:5px 9px; font-size:13px; } .offset button { padding:3px 7px; }
+                             .ctl { width:100%; justify-content:space-between; } }
   .player iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
   .player .bar { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px;
                  color:var(--mute); margin-top:6px; }
@@ -122,17 +125,15 @@
     <label><input type="checkbox" value="Hücum" checked> Hücum</label>
     <label><input type="checkbox" value="Blok" checked> Blok</label>
     <label><input type="checkbox" value="Ace" checked> Ace</label>
-    <span class="offset" title="Videonun başlangıcını öne / geriye al (bu tarayıcıda hatırlanır)">Başlangıç
-      <button data-d="-5">−5</button><button data-d="-1">−1</button><b id="off">0 sn</b>
-      <button data-d="1">+1</button><button data-d="5">+5</button></span>
   </div>
 
   <details class="info">
     <summary>Video tam servisten başlamıyor mu? Reklam mı çıkıyor?</summary>
     <p><b>Başlangıç anı.</b> Videodaki an, VolleyStation kaydındaki rallinin başlama saatinden ve YouTube yayınının
       başlama saatinden hesaplanıyor. Yayın salondaki zamanın birkaç saniye gerisinden gelebiliyor (yayıncıya göre
-      değişiyor), istatistiği tutanın ralliyi işaretlediği an da servisle birebir aynı değil. Video erken ya da geç
-      başlıyorsa <b>Başlangıç</b> düğmeleriyle kendine göre ayarla; ayar bu tarayıcıda hatırlanır.</p>
+      değişiyor), istatistiği tutanın ralliyi işaretlediği an da servisle birebir aynı değil. Video erken başlıyorsa
+      oynatıcının altındaki <b>Yayın gecikmesi</b>ni artır (+), geç başlıyorsa azalt (−); ayar bu tarayıcıda hatırlanır
+      ve "YouTube ↗" linklerine de uygulanır.</p>
     <p><b>YouTube Premium'dasın ama reklam çıkıyorsa.</b> Sayfadaki oynatıcı, tarayıcının üçüncü taraf çerez engeli
       yüzünden seni tanıyamıyor. Chrome'da: Ayarlar → Gizlilik ve güvenlik → Üçüncü taraf çerezleri → İzin verilen
       siteler → Ekle → <code>[*.]youtube.com</code>, sonra sayfayı yenile. "YouTube ↗" linki ise videoyu YouTube'da
@@ -142,7 +143,12 @@
   <div class="player" id="player" hidden>
     <div class="frame"><iframe id="yt" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe></div>
     <div class="bar"><span id="now"></span>
-      <span><button id="prev">◀ Önceki</button> <button id="next">Sonraki ▶</button></span></div>
+      <span class="ctl">
+        <span class="offset" title="Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)">Yayın gecikmesi
+          <button data-d="-5">−5</button><button data-d="-1">−1</button><b id="off">0 sn</b>
+          <button data-d="1">+1</button><button data-d="5">+5</button></span>
+        <span class="nav"><button id="prev">◀ Önceki</button> <button id="next">Sonraki ▶</button></span>
+      </span></div>
   </div>
 
   <div class="summary" id="summary"></div>
