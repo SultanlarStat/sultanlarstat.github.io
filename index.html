@@ -265,9 +265,12 @@ function matches() {
   $('novideo').textContent = none.length ? `Videosuna ulaşamadığımız maçlar: ${none.join(' · ')}` : '';
 }
 
+// parantezdeki sayı seçili türlere göre (sadece Dig işaretliyse dig sayısı); türde olayı olmayan oyuncu (0) ile kalır
 function players() {
   const team = $('team').value, m = $('match').value, n = new Map();
-  ROWS.filter(r => r.takim === team && (!m || r.mac_id === m)).forEach(r => n.set(r.oyuncu, (n.get(r.oyuncu) || 0) + 1));
+  const types = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
+  ROWS.filter(r => r.takim === team && (!m || r.mac_id === m))
+      .forEach(r => n.set(r.oyuncu, (n.get(r.oyuncu) || 0) + (types.includes(r.tur) ? 1 : 0)));
   const list = [...n].sort((a, b) => b[1] - a[1]);
   opts($('pl'), [['', 'Bütün oyuncular'], ...list.map(([p, c]) => [p, `${p} (${c})`])], true);
 }
@@ -427,7 +430,7 @@ function step(d) {
 $('team').onchange = () => { CUR = -1; matches(); players(); render(); gc('takim/' + $('team').value); };
 $('match').onchange = () => { CUR = -1; players(); render(); };
 $('pl').onchange = () => { CUR = -1; render(); if ($('pl').value) gc('oyuncu/' + $('pl').value); };
-document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; render(); });
+document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; players(); render(); });
 $('prev').onclick = () => step(-1);
 $('again').onclick = () => { CUR = -1; step(1); };
 function setFs(on) {
