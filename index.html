@@ -295,7 +295,8 @@ function play(i) {
     L.scrollTo({top: el.offsetTop - L.clientHeight / 3, behavior: 'smooth'});
 }
 
-// Sırayla oynat: ralli bitince (kayıttaki bitiş + 3 sn; en az 8, en çok 45 sn sonra) sıradaki sayıya geç
+// Sırayla oynat: ralli bitince sıradaki sayıya geç. Kayıttaki bitiş anı videoya tam oturmuyor (3 sn sonra geçmek
+// sayıyı kesiyordu, kullanıcı gördü): bitiş + 8 sn; ralli en az 12, en çok 45 sn sayılır
 let AUTO = true;
 try { AUTO = localStorage.getItem('auto') !== '0'; } catch (e) {}
 $('auto').checked = AUTO;
@@ -304,7 +305,7 @@ setInterval(() => {
   if (!AUTO || !YTP || !YTP.getCurrentTime || CUR < 0) return;
   const r = SHOWN[CUR];
   if (!r || YTP.getPlayerState() !== 1 || (YTP.getVideoData() || {}).video_id !== r.video) return;
-  const end = sec(r) + Math.min(Math.max((r.bitis ?? r.saniye + 15) - r.saniye, 8), 45) + 3;
+  const end = sec(r) + Math.min(Math.max((r.bitis ?? r.saniye + 15) - r.saniye, 12), 45) + 8;
   if (YTP.getCurrentTime() >= end) step(1);
 }, 500);
 
