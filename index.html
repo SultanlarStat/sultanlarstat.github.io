@@ -3,7 +3,7 @@
 <head>
 <base target="_blank">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sultanlar Ligi · Sayı videoları</title>
 <meta name="description" content="Vodafone Sultanlar Ligi: oyuncuların hücum sayısı, blok sayısı ve Ace'lerinin videoları, o ralliden başlayarak.">
 <meta property="og:title" content="Sultanlar Ligi · Sayı videoları">
@@ -11,6 +11,13 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@SultanlarStat">
 <meta name="theme-color" content="#000000">
+<!-- ana ekrana eklenince uygulama gibi açılır (adres çubuğu yok; iPhone'da tam ekran ancak böyle) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sayı videoları">
 <script data-goatcounter="https://sultanlarstat.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <script async src="https://www.youtube.com/iframe_api"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14'/%3E%3Cg fill='none' stroke='%23f5b301' stroke-width='4' stroke-linecap='round'%3E%3Ccircle cx='32' cy='32' r='24'/%3E%3Cpath d='M32 8c-5 9-5 19 0 24M32 32c10 1 18-3 23-11M32 32c-4 9-13 14-23 13'/%3E%3C/g%3E%3C/svg%3E">
@@ -22,6 +29,8 @@
                font:15px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; }
   a { color:var(--link); text-decoration:none; }
   .wrap { padding:0 20px 24px; }
+  /* ana ekrandan açılınca (iPhone) içerik saat / çentik alanının altından başlasın */
+  @media (display-mode: standalone) { .wrap { padding-top:env(safe-area-inset-top); } }
 
   /* başlık: siyah zemin, saha çizgileri, top */
   .hero { position:relative; overflow:hidden; margin:0 -20px 16px; padding:22px 20px 20px;
@@ -155,7 +164,7 @@
   </div>
 
   <details class="info">
-    <summary>Video tam servisten başlamıyor mu? Reklam mı çıkıyor?</summary>
+    <summary>Video tam servisten başlamıyor mu? Reklam mı çıkıyor? iPhone'da tam ekran?</summary>
     <p><b>Başlangıç anı.</b> Videodaki an, VolleyStation kaydındaki rallinin başlama saatinden ve YouTube yayınının
       başlama saatinden hesaplanıyor. Yayın salondaki zamanın birkaç saniye gerisinden gelebiliyor (yayıncıya göre
       değişiyor), istatistiği tutanın ralliyi işaretlediği an da servisle birebir aynı değil. Video erken başlıyorsa
@@ -165,6 +174,9 @@
       yüzünden seni tanıyamıyor. Chrome'da: Ayarlar → Gizlilik ve güvenlik → Üçüncü taraf çerezleri → İzin verilen
       siteler → Ekle → <code>[*.]youtube.com</code>, sonra sayfayı yenile. "YouTube ↗" linki ise videoyu YouTube'da
       açar, orada Premium her durumda geçerli.</p>
+    <p><b>iPhone'da tam ekran.</b> iPhone'daki tarayıcılar (Safari, Chrome) tam ekranda adres çubuğunu gizlemiyor.
+      Siteyi ana ekrana eklersen (Safari'de Paylaş → Ana Ekrana Ekle; Chrome'da sağ üstte Paylaş → Ana Ekrana Ekle)
+      ana ekrandaki simgeden uygulama gibi, adres çubuğu olmadan açılır.</p>
   </details>
 
   <div class="player" id="player" hidden>
