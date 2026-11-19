@@ -11,6 +11,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@SultanlarStat">
 <meta name="theme-color" content="#000000">
+<script data-goatcounter="https://sultanlarstat.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14'/%3E%3Cg fill='none' stroke='%23f5b301' stroke-width='4' stroke-linecap='round'%3E%3Ccircle cx='32' cy='32' r='24'/%3E%3Cpath d='M32 8c-5 9-5 19 0 24M32 32c10 1 18-3 23-11M32 32c-4 9-13 14-23 13'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root { --bg:#000; --fg:#eef0f3; --mute:#9aa1ad; --line:#262a31; --card:#111318; --card2:#181b21; --acc:#f5b301;
@@ -57,8 +58,10 @@
   code { background:var(--card2); padding:1px 5px; border-radius:4px; color:var(--fg); }
 
   .player { position:sticky; top:0; background:var(--bg); padding:4px 0 8px; z-index:2; }
-  .player .frame { position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:10px; overflow:hidden;
-                   border:1px solid var(--line); }
+  /* yapışık oynatıcı ekranın en çok ~%55'i: dizüstünde de altındaki liste görünsün */
+  .player .frame { position:relative; width:min(100%, calc(55vh * 16 / 9)); margin:0 auto; aspect-ratio:16/9;
+                   background:#000; border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+  .player .bar { width:min(100%, calc(55vh * 16 / 9)); margin-left:auto; margin-right:auto; }
   .player iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
   .player .bar { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px;
                  color:var(--mute); margin-top:6px; }
@@ -148,6 +151,8 @@
 let ROWS = [], SHOWN = [], CUR = -1, OFF = 0;
 try { OFF = parseInt(localStorage.getItem('offset') || '0', 10) || 0; } catch (e) {}
 const $ = id => document.getElementById(id);
+// GoatCounter olayları (çerezsiz; ziyaretçiyi tanımaz): takım / oyuncu seçimi, izlenen video, YouTube tıklaması
+const gc = (path, title) => { try { window.goatcounter && window.goatcounter.count({path, title: title || path, event: true}); } catch (e) {} };
 const TR_DATE = d => d.slice(8, 10) + '.' + d.slice(5, 7) + '.' + d.slice(0, 4);
 
 // küçük JSON'u satır nesnelerine açar (sayi_videolari.py: maclar / oyuncular / turler / satirlar)
@@ -220,11 +225,14 @@ function render() {
     html += `<div class="row${url ? ' click' : ''}" data-i="${i}">
       <span class="muted">${r.set}. set</span><span>${r.skor}</span>
       <span class="tag t-${r.tur}">${r.tur}</span><span class="who">${p ? '' : r.oyuncu}</span>
-      ${url ? `<a href="${url}" onclick="event.stopPropagation()">YouTube ↗</a>` : '<span class="muted">video yok</span>'}
+      ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : '<span class="muted">video yok</span>'}
     </div>`;
   });
   $('list').innerHTML = html;
   document.querySelectorAll('.row.click').forEach(el => el.onclick = () => play(+el.dataset.i));
+  document.querySelectorAll('a[data-yt]').forEach(a => a.onclick = e => {
+    e.stopPropagation(); gc('youtube/' + SHOWN[+a.dataset.yt].oyuncu);
+  });
 }
 
 function play(i) {
@@ -233,6 +241,7 @@ function play(i) {
   $('player').hidden = false;
   $('yt').src = `https://www.youtube.com/embed/${r.video}?start=${sec(r)}&autoplay=1&rel=0`;
   $('now').textContent = `${r.oyuncu} · ${r.set}. set ${r.skor} · ${r.tur}`;
+  gc('izle/' + r.oyuncu);
   document.querySelectorAll('.row.on').forEach(e => e.classList.remove('on'));
   const el = document.querySelector(`.row[data-i="${i}"]`); if (el) el.classList.add('on');
 }
@@ -241,9 +250,9 @@ function step(d) {
   for (let i = CUR + d; i >= 0 && i < SHOWN.length; i += d) if (SHOWN[i].saniye !== null) return play(i);
 }
 
-$('team').onchange = () => { CUR = -1; matches(); players(); render(); };
+$('team').onchange = () => { CUR = -1; matches(); players(); render(); gc('takim/' + $('team').value); };
 $('match').onchange = () => { CUR = -1; players(); render(); };
-$('pl').onchange = () => { CUR = -1; render(); };
+$('pl').onchange = () => { CUR = -1; render(); if ($('pl').value) gc('oyuncu/' + $('pl').value); };
 document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; render(); });
 $('prev').onclick = () => step(-1);
 $('next').onclick = () => step(1);
