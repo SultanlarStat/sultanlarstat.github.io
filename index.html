@@ -43,7 +43,9 @@
           background:radial-gradient(120% 140% at 85% 10%, #1d1606 0%, #000 55%); border-bottom:1px solid var(--line); }
   .hero svg.court { position:absolute; right:-40px; top:-10px; height:150%; opacity:.18; pointer-events:none; }
   .hero .top { position:relative; display:flex; align-items:center; gap:14px; }
-  .hero .ball { width:46px; height:46px; flex:none; }
+  .hero .ball { width:46px; height:46px; flex:none; transition:transform .3s; }
+  .hero .home { display:flex; align-items:center; gap:14px; color:inherit; }
+  .hero .home:hover .ball { transform:rotate(-25deg); }
   .hero .kicker { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); font-weight:700; }
   .hero h1 { margin:2px 0 0; font-size:26px; line-height:1.1; letter-spacing:-.01em; }
   .hero .x { margin-left:auto; display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid #333;
@@ -181,6 +183,8 @@
       <line x1="140" y1="20" x2="140" y2="280"/><line x1="260" y1="20" x2="260" y2="280"/>
     </svg>
     <div class="top">
+      <!-- top ve başlık: ana görünüme dön (Sayılar, Bütün takımlar, son hafta); aynı sekmede -->
+      <a class="home" href="./" target="_self" data-it="home" title="Ana sayfa">
       <svg class="ball" viewBox="0 0 64 64" fill="none" stroke="#f5b301" stroke-width="3" stroke-linecap="round">
         <circle cx="32" cy="32" r="28"/>
         <path d="M32 4c-6 10-6 22 0 28M32 32c11 1 21-4 27-13M32 32c-5 10-15 16-27 15"/>
@@ -190,6 +194,7 @@
         <div class="kicker" lang="tr">Vodafone Sultanlar Ligi</div>
         <h1 data-t="h1">Sayı ve dig videoları</h1>
       </div>
+      </a>
       <a class="x" href="https://x.com/SultanlarStat" title="X'te @SultanlarStat">
         <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8.1-9.3L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.1 3.9H5.1L17.7 20Z"/></svg>
         <span>@SultanlarStat</span></a>
@@ -302,7 +307,7 @@ const I18N = {
        dig_title: 'Mükemmel ve iyi dig (kurtarma); ralli kaybedilmiş olabilir', delay: 'Yayın gecikmesi',
        delay_title: 'Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)', auto: 'Sırayla oynat',
        auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', prev: '◀ Önceki', next: 'Sonraki ▶',
-       shareclip: 'Bu sayının linki', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
+       shareclip: 'Bu sayının linki', home: 'Ana sayfa', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
        novideo_tag: ' (video yok)', novideo: 'Videosuna ulaşamadığımız maçlar: ', all_players: 'Bütün oyuncular',
@@ -322,7 +327,7 @@ const I18N = {
        dig_title: 'Perfect and good digs; the rally may have been lost', delay: 'Broadcast delay',
        delay_title: 'If the clip starts early press +, if late − (remembered in this browser)', auto: 'Play next',
        auto_title: 'When the rally ends, go to the next one in the list', prev: '◀ Prev', next: 'Next ▶',
-       shareclip: 'Link to this point', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
+       shareclip: 'Link to this point', home: 'Home', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
        end: 'End of list', again: '↺ Restart', fexit: 'Exit full screen', fnext: 'Next', fprev: 'Previous',
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
        novideo_tag: ' (no video)', novideo: 'Matches without video: ', all_players: 'All players',
@@ -343,6 +348,7 @@ try {
   const q = new URLSearchParams(location.search).get('lang'), st = localStorage.getItem('lang');
   LANG = ['tr', 'en'].includes(q) ? q : ['tr', 'en'].includes(st) ? st
        : ((navigator.languages || [navigator.language || 'tr']).some(l => /^tr/i.test(l)) ? 'tr' : 'en');
+  if (['tr', 'en'].includes(q)) localStorage.setItem('lang', q);     // linkle seçilen dil de hatırlanır (ana sayfaya dönünce)
 } catch (e) {}
 const t = (k, ...a) => { const v = (I18N[LANG] || I18N.tr)[k] ?? I18N.tr[k] ?? k; return typeof v === 'function' ? v(...a) : v; };
 const TL = tur => t('tur_' + fold(tur));             // tür adı seçili dilde (veride Türkçe: Hücum / Blok / Ace / Dig)
