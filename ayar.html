@@ -38,7 +38,8 @@
     <b>Servis burada</b>'ya bas. Ölçümler bu tarayıcıda birikir; bitince <b>Kopyala</b> ile al.</div>
 
   <div class="sel">
-    <div><label for="mac">Maç (★ tabela kontrolüne göre şüpheli; ✓ ölçüldü)</label><select id="mac"></select></div>
+    <div><label for="mac">Maç (★ tabela kontrolüne göre şüpheli) ·
+      <span style="white-space:nowrap"><input type="checkbox" id="hepsi"> Ölçülenleri de göster</span></label><select id="mac"></select></div>
     <div><label for="ralli">Ralli (servis anı ölçülecek; skor ralli öncesi)</label><select id="ralli"></select></div>
   </div>
   <div class="hint" id="bilgi"></div>
@@ -69,12 +70,15 @@ let OL = []; try { OL = JSON.parse(localStorage.getItem('ayar_olcum') || '[]'); 
 const kaydet = () => { try { localStorage.setItem('ayar_olcum', JSON.stringify(OL)); } catch (e) {} };
 window.onYouTubeIframeAPIReady = () => { READY = true; };
 
+// ölçülen maçlar (uygulanmış: veride; ya da bu tarayıcıda ölçülmüş) listeden düşer; "Ölçülenleri de göster" ile görünür
 function maclar() {
   const done = new Set(OL.map(o => o.mac));
-  const ms = [...D.maclar].sort((x, y) => (y[7] - x[7]) || (Math.abs(y[6] ?? 0) - Math.abs(x[6] ?? 0)) || (x[1] < y[1] ? -1 : 1));
+  const keep = $('mac').value;
+  const ms = D.maclar.filter(m => $('hepsi').checked || !(m[8] || done.has(m[0]))).sort((x, y) => (y[7] - x[7]) || (Math.abs(y[6] ?? 0) - Math.abs(x[6] ?? 0)) || (x[1] < y[1] ? -1 : 1));
   $('mac').innerHTML = ms.map(([id, tarih, ev, dep, , kanal, oneri, sup]) =>
-    `<option value="${id}">${done.has(id) ? '✓ ' : sup ? '★ ' : ''}${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
+    `<option value="${id}">${done.has(id) || D.maclar.find(x => x[0] === id)[8] ? '✓ ' : sup ? '★ ' : ''}${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
     `${oneri !== null && oneri !== undefined ? ` · tabela ${oneri > 0 ? '+' : ''}${oneri} sn` : ''}</option>`).join('');
+  if ([...$('mac').options].some(o => o.value === keep)) $('mac').value = keep;
 }
 function ralliler() {
   const r = D.ralliler[$('mac').value] || [];
@@ -108,7 +112,7 @@ function burada() {
   OL = OL.filter(o => !(o.mac === m[0] && o.set === CUR[0] && o.h === CUR[1] && o.a === CUR[2]));
   OL.push({mac: m[0], ad: `${m[1]} ${m[2]} – ${m[3]}`, kanal: m[5], set: CUR[0], h: CUR[1], a: CUR[2], video: m[4],
            servis: t, acilis: CUR[3], duzeltme: duz});
-  kaydet(); liste(); maclar(); $('mac').value = m[0];
+  kaydet(); liste();          // ölçülen maç seçili kalır; başka maça geçince listeden düşer
   $('sonuc').innerHTML = `Servis ${fmt(t)} · şu an ${fmt(CUR[3])}'te açılıyor · gereken düzeltme <b>${duz > 0 ? '+' : ''}${duz} sn</b>`;
 }
 function liste() {
@@ -122,7 +126,8 @@ document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { if (P) P.
 $('pp').onclick = () => { if (P) P.getPlayerState() === 1 ? P.pauseVideo() : P.playVideo(); };
 $('git').onclick = () => { if (CUR) ac(CUR[3]); };
 $('burada').onclick = burada;
-$('mac').onchange = () => { ralliler(); sec(); };
+$('mac').onchange = () => { maclar(); ralliler(); sec(); };
+$('hepsi').onchange = () => { maclar(); ralliler(); sec(); };
 $('ralli').onchange = sec;
 $('kopya').onclick = async () => {
   const txt = OL.map(o => `${o.mac} | ${o.ad} | ${o.set}. set ${o.h}-${o.a} | servis ${o.servis} | açılış ${o.acilis} | düzeltme ${o.duzeltme}`).join('\n');
