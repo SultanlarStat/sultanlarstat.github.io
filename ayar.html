@@ -34,7 +34,7 @@
 <body>
 <div class="wrap">
   <h1>Ayar · servis anı</h1>
-  <div class="mute">Maç ve ralli seç; video şu anki ayarla o rallinin 10 sn öncesinden açılır. Servisin atıldığı karede
+  <div class="mute"><b>Set ortası ralli</b> ölç (setin ilk rallisi kayıtta bazen kayık). Maç ve ralli seç; video şu anki ayarla o rallinin 10 sn öncesinden açılır. Servisin atıldığı karede
     <b>Servis burada</b>'ya bas. Ölçümler bu tarayıcıda birikir; bitince <b>Kopyala</b> ile al.</div>
 
   <div class="sel">
@@ -85,8 +85,12 @@ function maclar() {
 }
 function ralliler() {
   const r = D.ralliler[$('mac').value] || [];
-  const bas = r.filter(x => x[1] === 0 && x[2] === 0), diger = r.filter(x => x[1] + x[2] > 0);
-  $('ralli').innerHTML = [...bas.map(x => [x, `${x[0]}. set başı (0-0)`]), ...diger.map(x => [x, `${x[0]}. set ${x[1]}-${x[2]}`])]
+  // önce set ortası ralliler (skor toplamı 15'i geçen ilk ralli): setin ilk rallisi kayıtta güvenilmez çıktı (Beşiktaş –
+  // Göztepe, İlbank – Nilüfer); sonra set başları ve bütün ralliler
+  const orta = [...new Set(r.map(x => x[0]))].map(n => r.find(x => x[0] === n && x[1] + x[2] >= 15)).filter(Boolean);
+  const bas = r.filter(x => x[1] === 0 && x[2] === 0), diger = r.filter(x => x[1] + x[2] > 0 && !orta.includes(x));
+  $('ralli').innerHTML = [...orta.map(x => [x, `${x[0]}. set ortası (${x[1]}-${x[2]})`]), ...bas.map(x => [x, `${x[0]}. set başı (0-0)`]),
+                          ...diger.map(x => [x, `${x[0]}. set ${x[1]}-${x[2]}`])]
     .map(([x, l]) => `<option value="${x.join(',')}">${l}</option>`).join('');
   // bekleyen ölçüm varsa ilk bekleyen ralli seçili gelir (ölçülmüş olanlar atlanır)
   const m = mac(), olc = new Set(OL.filter(o => o.mac === m[0]).map(o => `${o.set}:${o.h}-${o.a}`));
