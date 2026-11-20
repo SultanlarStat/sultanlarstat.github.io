@@ -74,10 +74,13 @@ window.onYouTubeIframeAPIReady = () => { READY = true; };
 function maclar() {
   const done = new Set(OL.map(o => o.mac));
   const keep = $('mac').value;
-  const ms = D.maclar.filter(m => $('hepsi').checked || !(m[8] || done.has(m[0]))).sort((x, y) => (y[7] - x[7]) || (Math.abs(y[6] ?? 0) - Math.abs(x[6] ?? 0)) || (x[1] < y[1] ? -1 : 1));
+  // bekleyen ölçümü (⏳) olan maç, ölçülmüş olsa da listede ve en başta
+  const todo = m => (m[9] || []).length > 0;
+  const ms = D.maclar.filter(m => $('hepsi').checked || todo(m) || !(m[8] || done.has(m[0]))).sort((x, y) => (todo(y) - todo(x)) || (y[7] - x[7]) || (Math.abs(y[6] ?? 0) - Math.abs(x[6] ?? 0)) || (x[1] < y[1] ? -1 : 1));
   $('mac').innerHTML = ms.map(([id, tarih, ev, dep, , kanal, oneri, sup]) =>
-    `<option value="${id}">${done.has(id) || D.maclar.find(x => x[0] === id)[8] ? '✓ ' : sup ? '★ ' : ''}${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
-    `${oneri !== null && oneri !== undefined ? ` · tabela ${oneri > 0 ? '+' : ''}${oneri} sn` : ''}</option>`).join('');
+    `<option value="${id}">${(D.maclar.find(x => x[0] === id)[9] || []).length ? '⏳ ' : done.has(id) || D.maclar.find(x => x[0] === id)[8] ? '✓ ' : sup ? '★ ' : ''}${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
+    `${oneri !== null && oneri !== undefined ? ` · tabela ${oneri > 0 ? '+' : ''}${oneri} sn` : ''}` +
+    `${(D.maclar.find(x => x[0] === id)[9] || []).length ? ' · ölçülecek: ' + D.maclar.find(x => x[0] === id)[9].map(y => y.replace(':', '. set ')).join(', ') : ''}</option>`).join('');
   if ([...$('mac').options].some(o => o.value === keep)) $('mac').value = keep;
 }
 function ralliler() {
@@ -85,6 +88,14 @@ function ralliler() {
   const bas = r.filter(x => x[1] === 0 && x[2] === 0), diger = r.filter(x => x[1] + x[2] > 0);
   $('ralli').innerHTML = [...bas.map(x => [x, `${x[0]}. set başı (0-0)`]), ...diger.map(x => [x, `${x[0]}. set ${x[1]}-${x[2]}`])]
     .map(([x, l]) => `<option value="${x.join(',')}">${l}</option>`).join('');
+  // bekleyen ölçüm varsa ilk bekleyen ralli seçili gelir (ölçülmüş olanlar atlanır)
+  const m = mac(), olc = new Set(OL.filter(o => o.mac === m[0]).map(o => `${o.set}:${o.h}-${o.a}`));
+  const ilk = (m[9] || []).find(y => !olc.has(y));
+  if (ilk) {
+    const [n, sk] = ilk.split(':'), [h, a] = sk.split('-').map(Number);
+    const o = [...$('ralli').options].find(o => { const v = o.value.split(',').map(Number); return v[0] === +n && v[1] === h && v[2] === a; });
+    if (o) $('ralli').value = o.value;
+  }
 }
 function mac() { return D.maclar.find(m => m[0] === $('mac').value); }
 function sec() {
