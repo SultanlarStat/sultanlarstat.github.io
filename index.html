@@ -707,9 +707,9 @@ setInterval(() => {
   if (!r || YTP.getPlayerState() !== 1 || (YTP.getVideoData() || {}).video_id !== r.video) return;
   // dig'de tekrar beklenmez: yayın tekrarı genelde rallinin bitişini gösteriyor, dig'i değil
   // uzun rallide süre sınırı yok (1–1,5 dakika sürebiliyor). Bitişten sonra: "Tekrarı izle" açıksa + 20 sn (yayın
-  // tekrarı), kapalıysa + 6 sn (bazı maçlarda zaman kayması var; tabela düzeltmesinden sonra küçültülebilir); dig + 4
+  // tekrarı), kapalıysa + 10 sn (kullanıcının ayarı; tabela düzeltmesinden sonra yeniden bakılacak); dig + 4
   const len = (r.bitis ?? r.saniye + 15) - r.saniye;
-  const after = r.tur === 'Dig' ? 4 : REPLAY ? 20 : 6;
+  const after = r.tur === 'Dig' ? 4 : REPLAY ? 20 : 10;
   const end = sec(r) + (r.tur === 'Ralli' ? Math.max(len, 12) : Math.min(Math.max(len, 12), 45)) + after;
   if (YTP.getCurrentTime() >= end && !FINISHED) step(1);
 }, 500);
