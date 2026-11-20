@@ -388,6 +388,9 @@ const weekOk = r => !$('week').value || String(r.hafta) === weekNo();
 const clipId = r => `${r.mac_id}_${r.set}_${r.skor}_${fold(r.tur)}`;
 
 // seçim adreste: ?takim=&mac=&oyuncu=&tur= (sayfa yenilenmeden güncellenir; link paylaşılınca aynı seçim açılır)
+// kart sürümü: X önizlemeyi adrese göre günlerce saklıyor; kapak.png değişince KART ve kapak.png?v= birlikte artırılır,
+// yeni paylaşılan linkler yeni görselle çıkar (21.11.2026)
+const KART = 2;
 function stateUrl(an) {
   const q = new URLSearchParams();
   if (MODE === 'uzun') q.set('mod', 'uzun');
@@ -401,6 +404,7 @@ function stateUrl(an) {
     if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked).map(x => fold(x.value)).join(','));
   }
   if (an) q.set('an', an);
+  q.set('v', KART);
   return location.origin + location.pathname + '?' + q.toString().replace(/%2C/g, ',').replace(/\+/g, '+');
 }
 function syncUrl() { try { history.replaceState(null, '', stateUrl()); } catch (e) {} }
