@@ -223,7 +223,7 @@
   </div>
 
   <details class="info">
-    <summary><span class="l-tr">Video tam servisten başlamıyor mu? Reklam mı çıkıyor? iPhone'da tam ekran?</span><span class="l-en">Clip not starting at the serve? Seeing ads? Full screen on iPhone?</span></summary>
+    <summary><span class="l-tr">Video tam servisten başlamıyor mu? Reklam mı çıkıyor? Video açılmıyor mu? iPhone'da tam ekran?</span><span class="l-en">Clip not starting at the serve? Seeing ads? Video not available? Full screen on iPhone?</span></summary>
     <div class="l-tr">
     <p><b>Başlangıç anı.</b> Videodaki an, VolleyStation kaydındaki rallinin başlama saatinden ve YouTube yayınının
       başlama saatinden hesaplanıyor. Yayın salondaki zamanın birkaç saniye gerisinden gelebiliyor (yayıncıya göre
@@ -238,6 +238,9 @@
       Siteyi <b>Safari</b>'den ana ekrana eklersen (••• ya da Paylaş → Ana Ekrana Ekle → Ekle) ana ekrandaki simgeden
       uygulama gibi, adres çubuğu olmadan açılır. iPhone'daki Chrome'da bu seçenek her sürümde yok; Safari'den bir kez
       eklemek yeterli.</p>
+    <p><b>Video açılmıyor mu?</b> Bazı yayınlar yayıncının ayarı yüzünden Türkiye dışında izlenemiyor ("Bu video
+      ülkenizde kullanılamıyor"); bunu sitede değiştiremiyoruz. Altyazı kapalı başlar, oynatıcıdaki CC düğmesiyle
+      açılabilir.</p>
     </div>
     <div class="l-en">
     <p><b>When the clip starts.</b> The moment in the video is computed from the rally start time in the VolleyStation
@@ -252,6 +255,10 @@
     <p><b>Full screen on iPhone.</b> Browsers on iPhone (Safari, Chrome) keep the address bar in full screen. Add the
       site to the home screen from <b>Safari</b> (••• or Share → Add to Home Screen → Add) and open it from the icon:
       it opens like an app, without the address bar.</p>
+    <p><b>Video not available?</b> Some broadcasts are geo-restricted by the broadcaster and cannot be watched outside
+      Türkiye ("This video is not available in your country"); this is not something the site can change. The
+      broadcasts are in Turkish. Captions start off; turn them on with the CC button in the player (YouTube can also
+      auto-translate them).</p>
     </div>
   </details>
 
@@ -601,11 +608,11 @@ window.onYouTubeIframeAPIReady = () => { YT_READY = true; if (PENDING) load(...P
 function load(video, start) {
   if (!YT_READY) { PENDING = [video, start]; return; }
   if (!YTP) {
-    YTP = new YT.Player('yt', {videoId: video, playerVars: {start, autoplay: 1, rel: 0, playsinline: 1,
+    YTP = new YT.Player('yt', {videoId: video, playerVars: {start, autoplay: 1, rel: 0, playsinline: 1, cc_load_policy: 0,
                                                               fs: 0, origin: location.origin},   // tam ekran: #fs
                                events: {onReady: e => e.target.playVideo(),
                                         onStateChange: e => {
-                                          if (e.data === 1) reveal();
+                                          if (e.data === 1) { reveal(); noCaptions(); }
                                           else if (e.data === 0 && AUTO && CUR >= 0 && !FINISHED) step(1);   // video bitti
                                         }}});
     return;
@@ -613,6 +620,16 @@ function load(video, start) {
   const cur = YTP.getVideoData && YTP.getVideoData().video_id;
   if (cur === video) { YTP.seekTo(start, true); YTP.playVideo(); }
   else YTP.loadVideoById({videoId: video, startSeconds: start});
+}
+
+// altyazı kapalı başlasın (YouTube otomatik altyazıyı ya da izleyicinin ayarını açabiliyor); her yeni videoda bir kez,
+// izleyici sonra CC ile açarsa dokunulmaz
+let CC_OFF_FOR = null;
+function noCaptions() {
+  const id = (YTP.getVideoData && YTP.getVideoData().video_id) || '';
+  if (CC_OFF_FOR === id) return;
+  CC_OFF_FOR = id;
+  try { YTP.unloadModule('captions'); YTP.unloadModule('cc'); } catch (e) {}
 }
 
 // geçiş: video oynarken başka sayıya geçilirse görüntü siyaha iner, ses kısılır; yeni video başlayınca açılır
