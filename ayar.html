@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ayar · servis anı</title>
+<script async src="https://www.youtube.com/iframe_api"></script>
+<style>
+  /* Kişisel ayar sayfası (siteden link verilmez): maç ve ralli seç, videoda servisi işaretle, düzeltmeyi kopyala */
+  :root { --bg:#000; --fg:#eef0f3; --mute:#9aa1ad; --line:#262a31; --card:#111318; --card2:#181b21; --acc:#f5b301; --ok:#2dd4bf; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:14px 16px 40px; }
+  h1 { font-size:20px; margin:0 0 4px; } .mute { color:var(--mute); font-size:13px; }
+  .sel { display:grid; grid-template-columns:2fr 1fr; gap:10px; margin:12px 0; }
+  @media (max-width:640px) { .sel { grid-template-columns:1fr; } }
+  label { display:block; font-size:12px; color:var(--mute); margin-bottom:3px; }
+  select { width:100%; padding:8px; font-size:15px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  .frame { position:relative; width:100%; aspect-ratio:16/9; background:#000; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .bar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:10px 0; }
+  button { padding:7px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card2); color:var(--fg); font-size:14px; cursor:pointer; }
+  button:hover { border-color:#3a404a; }
+  button.big { background:var(--acc); color:#000; font-weight:800; border-color:var(--acc); padding:9px 18px; }
+  .time { font:600 22px ui-monospace, Menlo, monospace; min-width:110px; text-align:center; }
+  .hint { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:13.5px; color:var(--mute); }
+  .hint b { color:var(--fg); }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; margin-top:8px; }
+  td, th { padding:5px 6px; border-bottom:1px solid var(--line); text-align:left; } th { color:var(--mute); font-weight:500; }
+  .res { font-size:15px; margin:6px 0; } .res b { color:var(--ok); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ayar · servis anı</h1>
+  <div class="mute">Maç ve ralli seç; video şu anki ayarla o rallinin 10 sn öncesinden açılır. Servisin atıldığı karede
+    <b>Servis burada</b>'ya bas. Ölçümler bu tarayıcıda birikir; bitince <b>Kopyala</b> ile al.</div>
+
+  <div class="sel">
+    <div><label for="mac">Maç (★ tabela kontrolüne göre şüpheli; ✓ ölçüldü)</label><select id="mac"></select></div>
+    <div><label for="ralli">Ralli (servis anı ölçülecek; skor ralli öncesi)</label><select id="ralli"></select></div>
+  </div>
+  <div class="hint" id="bilgi"></div>
+
+  <div class="frame" style="margin-top:10px"><div id="yt"></div></div>
+  <div class="bar">
+    <button data-s="-5">−5</button><button data-s="-1">−1</button><button data-s="-0.2">−0,2</button>
+    <button id="pp">⏯</button>
+    <button data-s="0.2">+0,2</button><button data-s="1">+1</button><button data-s="5">+5</button>
+    <span class="time" id="t">–</span>
+    <button id="git" title="Şu anki ayarın açtığı ana dön">↺ Ayar noktası</button>
+    <button class="big" id="burada">Servis burada</button>
+  </div>
+  <div class="res" id="sonuc"></div>
+  <div class="mute">Klavye: boşluk oynat / durdur · ← → 1 sn · Shift + ← → 5 sn · , . 0,2 sn · Enter: Servis burada</div>
+
+  <h2 style="font-size:16px;margin:20px 0 4px">Ölçümler <span class="mute" id="say"></span></h2>
+  <div class="bar"><button id="kopya">Kopyala</button><button id="temizle">Listeyi temizle</button></div>
+  <table><thead><tr><th>Maç</th><th>Ralli</th><th>Servis (video)</th><th>Şu anki açılış</th><th>Düzeltme</th><th></th></tr></thead>
+    <tbody id="liste"></tbody></table>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = s => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`;
+let D = null, P = null, READY = false, CUR = null;       // CUR: seçili ralli [set, h, a, saniye]
+let OL = []; try { OL = JSON.parse(localStorage.getItem('ayar_olcum') || '[]'); } catch (e) {}
+const kaydet = () => { try { localStorage.setItem('ayar_olcum', JSON.stringify(OL)); } catch (e) {} };
+window.onYouTubeIframeAPIReady = () => { READY = true; };
+
+function maclar() {
+  const done = new Set(OL.map(o => o.mac));
+  const ms = [...D.maclar].sort((x, y) => (y[7] - x[7]) || (Math.abs(y[6] ?? 0) - Math.abs(x[6] ?? 0)) || (x[1] < y[1] ? -1 : 1));
+  $('mac').innerHTML = ms.map(([id, tarih, ev, dep, , kanal, oneri, sup]) =>
+    `<option value="${id}">${done.has(id) ? '✓ ' : sup ? '★ ' : ''}${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
+    `${oneri !== null && oneri !== undefined ? ` · tabela ${oneri > 0 ? '+' : ''}${oneri} sn` : ''}</option>`).join('');
+}
+function ralliler() {
+  const r = D.ralliler[$('mac').value] || [];
+  const bas = r.filter(x => x[1] === 0 && x[2] === 0), diger = r.filter(x => x[1] + x[2] > 0);
+  $('ralli').innerHTML = [...bas.map(x => [x, `${x[0]}. set başı (0-0)`]), ...diger.map(x => [x, `${x[0]}. set ${x[1]}-${x[2]}`])]
+    .map(([x, l]) => `<option value="${x.join(',')}">${l}</option>`).join('');
+}
+function mac() { return D.maclar.find(m => m[0] === $('mac').value); }
+function sec() {
+  CUR = $('ralli').value.split(',').map(Number);
+  const m = mac();
+  $('bilgi').innerHTML = `<b>${m[2]} – ${m[3]}</b> · ${CUR[0]}. set, ralli öncesi skor ${CUR[1]}-${CUR[2]} · şu anki ayar bu ralliyi videonun ` +
+    `<b>${fmt(CUR[3])}</b>'inde açıyor` + (m[6] !== null && m[6] !== undefined ? ` · tabela kontrolünün önerisi ${m[6] > 0 ? '+' : ''}${m[6]} sn` : '');
+  $('sonuc').textContent = '';
+  ac(Math.max(CUR[3] - 10, 0));
+}
+function ac(t) {
+  const id = mac()[4];
+  if (!READY) return setTimeout(() => ac(t), 200);
+  if (!P) { P = new YT.Player('yt', {videoId: id, playerVars: {start: Math.floor(t), autoplay: 1, rel: 0, playsinline: 1, cc_load_policy: 0}}); return; }
+  if (P.getVideoData && P.getVideoData().video_id === id) { P.seekTo(t, true); P.playVideo(); }
+  else P.loadVideoById({videoId: id, startSeconds: t});
+}
+setInterval(() => { if (P && P.getCurrentTime) $('t').textContent = fmt(P.getCurrentTime()); }, 100);
+
+function burada() {
+  if (!P || !CUR) return;
+  P.pauseVideo();
+  const t = Math.round(P.getCurrentTime() * 10) / 10, m = mac();
+  const duz = Math.round((t - 2 - CUR[3]) * 10) / 10;      // site servisten 2 sn önce açsın
+  OL = OL.filter(o => !(o.mac === m[0] && o.set === CUR[0] && o.h === CUR[1] && o.a === CUR[2]));
+  OL.push({mac: m[0], ad: `${m[1]} ${m[2]} – ${m[3]}`, kanal: m[5], set: CUR[0], h: CUR[1], a: CUR[2], video: m[4],
+           servis: t, acilis: CUR[3], duzeltme: duz});
+  kaydet(); liste(); maclar(); $('mac').value = m[0];
+  $('sonuc').innerHTML = `Servis ${fmt(t)} · şu an ${fmt(CUR[3])}'te açılıyor · gereken düzeltme <b>${duz > 0 ? '+' : ''}${duz} sn</b>`;
+}
+function liste() {
+  $('say').textContent = `(${OL.length})`;
+  $('liste').innerHTML = OL.map((o, i) => `<tr><td>${o.ad}</td><td>${o.set}. set ${o.h}-${o.a}</td><td>${fmt(o.servis)}</td>` +
+    `<td>${fmt(o.acilis)}</td><td><b>${o.duzeltme > 0 ? '+' : ''}${o.duzeltme}</b></td><td><button data-sil="${i}">sil</button></td></tr>`).join('');
+  document.querySelectorAll('[data-sil]').forEach(b => b.onclick = () => { OL.splice(+b.dataset.sil, 1); kaydet(); liste(); maclar(); });
+}
+
+document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { if (P) P.seekTo(P.getCurrentTime() + +b.dataset.s, true); });
+$('pp').onclick = () => { if (P) P.getPlayerState() === 1 ? P.pauseVideo() : P.playVideo(); };
+$('git').onclick = () => { if (CUR) ac(CUR[3]); };
+$('burada').onclick = burada;
+$('mac').onchange = () => { ralliler(); sec(); };
+$('ralli').onchange = sec;
+$('kopya').onclick = async () => {
+  const txt = OL.map(o => `${o.mac} | ${o.ad} | ${o.set}. set ${o.h}-${o.a} | servis ${o.servis} | açılış ${o.acilis} | düzeltme ${o.duzeltme}`).join('\n');
+  try { await navigator.clipboard.writeText(txt); $('kopya').textContent = 'Kopyalandı ✓'; } catch (e) { prompt('Kopyala:', txt); }
+  setTimeout(() => $('kopya').textContent = 'Kopyala', 2000);
+};
+$('temizle').onclick = () => { if (confirm('Bütün ölçümler silinsin mi?')) { OL = []; kaydet(); liste(); maclar(); } };
+document.addEventListener('keydown', e => {
+  if (e.target.matches('select') || !P) return;
+  const st = d => { e.preventDefault(); P.seekTo(P.getCurrentTime() + d, true); };
+  if (e.key === ' ') { e.preventDefault(); $('pp').click(); }
+  else if (e.key === 'ArrowLeft') st(e.shiftKey ? -5 : -1);
+  else if (e.key === 'ArrowRight') st(e.shiftKey ? 5 : 1);
+  else if (e.key === ',') st(-0.2);
+  else if (e.key === '.') st(0.2);
+  else if (e.key === 'Enter') { e.preventDefault(); burada(); }
+});
+
+fetch('ayar.json?v=' + Date.now(), {cache: 'no-store'}).then(r => r.json()).then(d => {
+  D = d; maclar(); ralliler(); liste(); sec();
+});
+</script>
+</body>
+</html>
