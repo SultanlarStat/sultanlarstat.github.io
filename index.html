@@ -56,8 +56,25 @@
   @media (max-width:640px) { .hero h1 { font-size:21px; } .hero .x span { display:none; } .hero .ball { width:38px; height:38px; }
                              .hero .kicker { font-size:11px; letter-spacing:.06em; white-space:nowrap; } }
 
-  .filters { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:10px; }
-  @media (max-width:640px) { .filters { grid-template-columns:1fr; } }
+  .filters { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:10px; }
+  @media (max-width:640px) { .filters { grid-template-columns:1fr 1fr; } }
+  /* sekmeler: Sayılar ve dig'ler / En uzun ralliler */
+  .tabs { display:flex; gap:4px; margin:0 0 14px; border-bottom:1px solid var(--line); overflow-x:auto; }
+  .tab { background:none; border:0; border-bottom:3px solid transparent; border-radius:0; margin-bottom:-1px;
+         padding:9px 14px; font-weight:600; color:var(--mute); white-space:nowrap; }
+  .tab.on { color:var(--fg); border-bottom-color:var(--acc); }
+  body[data-mod="uzun"] .only-sayi, body[data-mod="sayi"] .only-uzun { display:none; }
+  /* en uzun ralliler listesi */
+  .urow { display:grid; grid-template-columns:34px 86px 1fr 104px 180px 150px auto; gap:10px; align-items:center;
+          padding:8px 6px; border-radius:6px; font-size:14px; }
+  .urow.h { color:var(--mute); font-size:12px; border-bottom:1px solid var(--line); border-radius:0; padding-bottom:6px; }
+  .urow .rk { font-weight:800; color:var(--acc); text-align:center; font-size:15px; }
+  .urow .bar { height:7px; background:#2a2f37; border-radius:4px; overflow:hidden; margin-top:3px; }
+  .urow .bar i { display:block; height:100%; background:var(--acc); }
+  .urow .ss { display:none; }
+  @media (max-width:640px) { .urow { grid-template-columns:22px 1fr 104px auto; gap:8px; }
+                             .urow .d, .urow .w { display:none; } .urow .ss { display:block; color:var(--mute); font-size:12.5px; }
+                             .urow b { font-size:12.5px; } }
   label { display:block; font-size:12px; color:var(--mute); margin-bottom:3px; }
   select { width:100%; padding:8px; font-size:15px; border:1px solid var(--line); border-radius:8px;
            background:var(--card); color:var(--fg); }
@@ -142,8 +159,9 @@
   .row { display:grid; grid-template-columns:62px 62px 70px 1fr auto; gap:8px; align-items:center; padding:6px 6px;
          border-radius:6px; font-size:14px; }
   .row.click { cursor:pointer; }
-  .row.click:hover, .row.on { background:var(--card2); }
-  .row.click:focus-visible { outline:2px solid var(--acc); outline-offset:-2px; }
+  .row.click:hover, .row.on, .urow.click:hover, .urow.on { background:var(--card2); }
+  .urow.on { box-shadow:inset 3px 0 0 var(--acc); }
+  .row.click:focus-visible, .urow.click:focus-visible { outline:2px solid var(--acc); outline-offset:-2px; }
   .row.on { box-shadow:inset 3px 0 0 var(--acc); }
   .row .who { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tag { font-size:12px; font-weight:700; }
@@ -180,12 +198,19 @@
     <p class="lead" id="sub" data-t="loading">Veri yükleniyor…</p>
   </header>
 
+  <div class="tabs" role="tablist">
+    <button class="tab" data-mod="sayi" data-t="tab_sayi" role="tab">Sayılar ve dig'ler</button>
+    <button class="tab" data-mod="uzun" data-t="tab_uzun" role="tab">En uzun ralliler</button>
+  </div>
   <div class="filters">
     <div><label for="team" data-t="team">Takım</label><select id="team"></select></div>
-    <div><label for="match" data-t="match">Maç</label><select id="match"></select></div>
-    <div><label for="pl" data-t="player">Oyuncu</label><select id="pl"></select></div>
+    <div><label for="week" data-t="week">Hafta</label><select id="week"></select></div>
+    <div class="only-sayi"><label for="match" data-t="match">Maç</label><select id="match"></select></div>
+    <div class="only-sayi"><label for="pl" data-t="player">Oyuncu</label><select id="pl"></select></div>
+    <div class="only-uzun"><label for="kac" data-t="kac">Kaç ralli</label>
+      <select id="kac"><option>10</option><option selected>20</option><option>50</option></select></div>
   </div>
-  <div class="types">
+  <div class="types only-sayi">
     <label><input type="checkbox" value="Hücum" checked> <span data-t="tur_hucum">Hücum</span></label>
     <label><input type="checkbox" value="Blok" checked> <span data-t="tur_blok">Blok</span></label>
     <label><input type="checkbox" value="Ace" checked> <span data-t="tur_ace">Ace</span></label>
@@ -246,7 +271,7 @@
 
   <div class="sumrow"><span class="summary" id="summary"></span>
     <button class="share" id="sharelist" data-t="sharelist" data-it="sharelist_title" title="Bu listenin linki">🔗 Listeyi paylaş</button></div>
-  <div class="novideo" id="novideo"></div>
+  <div class="novideo only-sayi" id="novideo"></div>
   <div id="list"><div class="msg" data-t="loading2">Yükleniyor…</div></div>
 
   <div class="toast" id="toast"></div>
@@ -266,6 +291,9 @@
 
 <script>
 let ROWS = [], SHOWN = [], CUR = -1, OFF = 0, UPDATED = null;
+let MODE = 'sayi', RALLIES = [], WEEKS = [];       // sekme; en uzun ralliler; [hafta, ilk gün, son gün]
+const ALL = '*';                                   // "Bütün takımlar"
+const MAXROW = 1500;                               // daha fazlası yavaşlatıyor: ilk 1500 satır, "seçimi daraltın"
 // iki dil: ?lang= > bu tarayıcıda seçilen > tarayıcının dili (Türkçe değilse İngilizce). Konum (IP) kullanılmaz.
 const I18N = {
   tr: {title: 'Sultanlar Ligi · Sayı ve dig videoları', h1: 'Sayı ve dig videoları', team: 'Takım', match: 'Maç',
@@ -280,6 +308,12 @@ const I18N = {
        points: n => `${n} sayı`, digs: n => `${n} dig`, withvideo: n => `${n} tanesinin videosu var`,
        empty: 'Bu seçimde sayı yok.', set: n => `${n}. set`, novid: 'video yok', copied: 'Link kopyalandı',
        share_x: "X'te paylaş", sec: 'sn', lang_btn: 'EN',
+       tab_sayi: "Sayılar ve dig'ler", tab_uzun: 'En uzun ralliler', all_teams: 'Bütün takımlar', week: 'Hafta',
+       all_season: 'Bütün sezon', week_n: (n, r) => `${n}. hafta · ${r}`, kac: 'Kaç ralli',
+       len: (h, m) => `${h} hücum · ${m} temas`, rank: k => `En uzun ${k}. ralli`, rallies: n => `${n} ralli`,
+       uzun_sum: n => `En uzun ${n} ralli · hücum sayısına göre, eşitlikte temas`, h_date: 'Tarih', h_match: 'Maç',
+       h_set: 'Set · skor', h_len: 'Uzunluk', h_won: 'Kazanan',
+       toomany: n => `İlk ${n} satır gösteriliyor; takım, hafta ya da maç seçerek daraltın.`,
        lead: d => `Takım, maç ve oyuncu seç; hücum sayısı, blok sayısı, Ace ve dig'lerin listesi gelir. Satıra tıklayınca ` +
                   `video o ralliden başlar, Önceki / Sonraki ile sayılar arasında geçilir. Son güncelleme ${d}.`},
   en: {title: 'Sultanlar League · Point & dig videos', h1: 'Point & dig videos', team: 'Team', match: 'Match',
@@ -294,6 +328,12 @@ const I18N = {
        points: n => `${n} point${n === 1 ? '' : 's'}`, digs: n => `${n} dig${n === 1 ? '' : 's'}`,
        withvideo: n => `${n} with video`, empty: 'Nothing in this selection.', set: n => `Set ${n}`,
        novid: 'no video', copied: 'Link copied', share_x: 'Share on X', sec: 's', lang_btn: 'TR',
+       tab_sayi: 'Points & digs', tab_uzun: 'Longest rallies', all_teams: 'All teams', week: 'Week',
+       all_season: 'Whole season', week_n: (n, r) => `Week ${n} · ${r}`, kac: 'How many',
+       len: (h, m) => `${h} attacks · ${m} contacts`, rank: k => `Longest rally #${k}`,
+       rallies: n => `${n} rall${n === 1 ? 'y' : 'ies'}`, uzun_sum: n => `Longest ${n} rallies · by attacks, then contacts`,
+       h_date: 'Date', h_match: 'Match', h_set: 'Set · score', h_len: 'Length', h_won: 'Won by',
+       toomany: n => `Showing the first ${n} rows; pick a team, week or match to narrow down.`,
        lead: d => `Pick a team, match and player to list attack points, block points, aces and digs. Click a row and ` +
                   `the video starts at that rally; use Prev / Next to step through. Last update ${d}.`},
 };
@@ -321,17 +361,24 @@ function pick(sel, want) {
   if (hit) sel.value = hit.value;
   return !!hit;
 }
+const teamName = v => v === ALL ? t('all_teams') : v;
+const weekOk = r => !$('week').value || String(r.hafta) === $('week').value;
 // tek bir sayının kimliği (linkte an=): maç_set_skor_tür
 const clipId = r => `${r.mac_id}_${r.set}_${r.skor}_${fold(r.tur)}`;
 
 // seçim adreste: ?takim=&mac=&oyuncu=&tur= (sayfa yenilenmeden güncellenir; link paylaşılınca aynı seçim açılır)
 function stateUrl(an) {
   const q = new URLSearchParams();
-  q.set('takim', $('team').value);
-  if ($('match').value) q.set('mac', $('match').value);
-  if ($('pl').value) q.set('oyuncu', $('pl').value);
-  const ty = [...document.querySelectorAll('.types input')];
-  if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked).map(x => fold(x.value)).join(','));
+  if (MODE === 'uzun') q.set('mod', 'uzun');
+  q.set('takim', $('team').value === ALL ? 'hepsi' : $('team').value);
+  if ($('week').value) q.set('hafta', $('week').value);
+  if (MODE === 'uzun') { if ($('kac').value !== '20') q.set('kac', $('kac').value); }
+  else {
+    if ($('match').value) q.set('mac', $('match').value);
+    if ($('pl').value) q.set('oyuncu', $('pl').value);
+    const ty = [...document.querySelectorAll('.types input')];
+    if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked).map(x => fold(x.value)).join(','));
+  }
   if (an) q.set('an', an);
   return location.origin + location.pathname + '?' + q.toString().replace(/%2C/g, ',').replace(/\+/g, '+');
 }
@@ -339,7 +386,13 @@ function syncUrl() { try { history.replaceState(null, '', stateUrl()); } catch (
 
 function applyUrl() {
   const q = new URLSearchParams(location.search);
-  pick($('team'), q.get('takim'));
+  MODE = q.get('mod') === 'uzun' ? 'uzun' : 'sayi';
+  showMode();
+  if (['hepsi', 'all', '*'].includes(fold(q.get('takim') || ''))) $('team').value = ALL;
+  else pick($('team'), q.get('takim'));
+  if (q.get('hafta') && [...$('week').options].some(o => o.value === q.get('hafta'))) $('week').value = q.get('hafta');
+  else if (!q.get('takim') && MODE === 'sayi' && WEEKS.length) $('week').value = String(WEEKS[WEEKS.length - 1][0]);   // ilk açılış: son hafta
+  if (q.get('kac') && [...$('kac').options].some(o => o.value === q.get('kac'))) $('kac').value = q.get('kac');
   matches();
   pick($('match'), q.get('mac'));
   if (q.get('tur')) {
@@ -372,9 +425,18 @@ async function share(url, text) {
 
 // küçük JSON'u satır nesnelerine açar (sayi_videolari.py: maclar / oyuncular / turler / satirlar)
 function expand(d) {
+  const wk = {};
+  d.maclar.forEach(([, tarih, , , , h]) => { if (h) wk[h] = [h, wk[h] ? wk[h][1] < tarih ? wk[h][1] : tarih : tarih,
+                                                             wk[h] ? wk[h][2] > tarih ? wk[h][2] : tarih : tarih]; });
+  WEEKS = Object.values(wk).sort((a, b) => a[0] - b[0]);
+  RALLIES = (d.ralliler || []).map(([mi, set, skor, hucum, temas, side, sec, end]) => {
+    const [mac_id, tarih, ev, dep, video, hafta] = d.maclar[mi];
+    return {mac_id, tarih, ev, dep, video, hafta, set, skor, hucum, temas, kazanan: side ? dep : ev, oyuncu: '',
+            tur: 'Ralli', saniye: sec, bitis: end};
+  });
   return d.satirlar.map(([mi, set, skor, side, pi, ti, sec, end]) => {
-    const [mac_id, tarih, ev, dep, video] = d.maclar[mi];
-    return {mac_id, tarih, ev, dep, video, set, skor, takim: side ? dep : ev, oyuncu: d.oyuncular[pi],
+    const [mac_id, tarih, ev, dep, video, hafta] = d.maclar[mi];
+    return {mac_id, tarih, ev, dep, video, hafta, set, skor, takim: side ? dep : ev, oyuncu: d.oyuncular[pi],
             tur: d.turler[ti], saniye: sec, bitis: end};
   });
 }
@@ -399,16 +461,22 @@ function opts(sel, items, keep) {
 const hasVideo = id => ROWS.some(x => x.mac_id === id && x.saniye !== null);
 
 function teams() {
-  const t = [...new Set(ROWS.map(r => r.takim))].sort((a, b) => a.localeCompare(b, 'tr'));
-  opts($('team'), t.map(x => [x, x]));
+  const tm = [...new Set(ROWS.map(r => r.takim))].sort((a, b) => a.localeCompare(b, 'tr'));
+  opts($('team'), [[ALL, t('all_teams')], ...tm.map(x => [x, x])], true);
+}
+function weeks() {
+  const d = s => s.slice(8, 10) + '.' + s.slice(5, 7);
+  opts($('week'), [['', t('all_season')], ...WEEKS.map(([n, a, b]) => [String(n), t('week_n', n, a === b ? d(a) : `${d(a)}–${d(b)}`)])].reverse()
+        .sort((x, y) => (x[0] === '' ? -1 : y[0] === '' ? 1 : y[0] - x[0])), true);
 }
 
 function matches() {
   const team = $('team').value, seen = new Map(), none = [];
-  ROWS.filter(r => r.ev === team || r.dep === team).forEach(r => {
+  ROWS.filter(r => (team === ALL || r.ev === team || r.dep === team) && weekOk(r)).forEach(r => {
     if (!seen.has(r.mac_id)) {
       const opp = r.ev === team ? r.dep : r.ev, video = hasVideo(r.mac_id);
-      seen.set(r.mac_id, `${TR_DATE(r.tarih)} · ${r.ev === team ? '' : '@ '}${opp}${video ? '' : t('novideo_tag')}`);
+      const lbl = team === ALL ? `${r.ev} – ${r.dep}` : `${r.ev === team ? '' : '@ '}${opp}`;
+      seen.set(r.mac_id, `${TR_DATE(r.tarih)} · ${lbl}${video ? '' : t('novideo_tag')}`);
       if (!video) none.push(`${TR_DATE(r.tarih)} ${r.ev} – ${r.dep}`);
     }
   });
@@ -420,7 +488,7 @@ function matches() {
 function players() {
   const team = $('team').value, m = $('match').value, n = new Map();
   const types = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
-  ROWS.filter(r => r.takim === team && (!m || r.mac_id === m))
+  ROWS.filter(r => (team === ALL || r.takim === team) && weekOk(r) && (!m || r.mac_id === m))
       .forEach(r => n.set(r.oyuncu, (n.get(r.oyuncu) || 0) + (types.includes(r.tur) ? 1 : 0)));
   const list = [...n].sort((a, b) => b[1] - a[1]);
   opts($('pl'), [['', t('all_players')], ...list.map(([p, c]) => [p, `${p} (${c})`])], true);
@@ -428,6 +496,7 @@ function players() {
 
 // "48 sayı · 30 dig" (dig sayı değil, ayrı sayılır)
 function counts(rows) {
+  if (MODE === 'uzun') return t('rallies', rows.length);
   const d = rows.filter(r => r.tur === 'Dig').length, n = rows.length - d;
   return [n ? t('points', n) : '', d ? t('digs', d) : ''].filter(Boolean).join(' · ') || t('points', 0);
 }
@@ -437,15 +506,60 @@ const sec = r => Math.max(r.saniye + OFF, 0);
 
 function showOff() { $('off').textContent = (OFF > 0 ? '+' : OFF < 0 ? '−' : '') + Math.abs(OFF) + ' ' + t('sec'); }
 
+// satırın iki satırlık etiketi (alt yazı, oynatıcı altı, paylaşım)
+function lbl(r) {
+  if (r.tur === 'Ralli') return [`${t('rank', r.sira)} · ${t('len', r.hucum, r.temas)}`, `${t('set', r.set)} ${r.skor}`];
+  return [`${r.oyuncu} · ${TL(r.tur)}`, `${t('set', r.set)} ${r.skor}`];
+}
+
+function bindRows() {
+  document.querySelectorAll('.row.click, .urow.click').forEach(el => {
+    el.onclick = () => play(+el.dataset.i);
+    el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(+el.dataset.i); } };
+  });
+  document.querySelectorAll('a[data-yt]').forEach(a => a.onclick = e => {
+    e.stopPropagation(); gc('youtube/' + (SHOWN[+a.dataset.yt].oyuncu || 'ralli'));
+  });
+}
+
+// En uzun ralliler: hücum sayısına göre (eşitlikte temas), seçili takım / hafta, ilk N
+function renderUzun() {
+  const team = $('team').value, n = +$('kac').value;
+  SHOWN = RALLIES.filter(r => (team === ALL || r.ev === team || r.dep === team) && weekOk(r))
+                 .sort((a, b) => b.hucum - a.hucum || b.temas - a.temas || (a.tarih < b.tarih ? -1 : 1)).slice(0, n)
+                 .map((r, i) => ({...r, sira: i + 1}));
+  $('summary').textContent = t('uzun_sum', SHOWN.length);
+  if (!SHOWN.length) { $('list').innerHTML = `<div class="msg">${t('empty')}</div>`; syncUrl(); return; }
+  const mx = SHOWN[0].hucum;
+  let html = `<div class="urow h"><span>#</span><span class="d">${t('h_date')}</span><span>${t('h_match')}</span>` +
+             `<span class="d">${t('h_set')}</span><span>${t('h_len')}</span><span class="w">${t('h_won')}</span><span></span></div>`;
+  SHOWN.forEach((r, i) => {
+    const url = r.saniye !== null ? `https://www.youtube.com/watch?v=${r.video}&t=${sec(r)}s` : '';
+    html += `<div class="urow${url ? ' click' : ''}" data-i="${i}"${url ? ' tabindex="0" role="button"' : ''}>
+      <span class="rk">${r.sira}</span><span class="d muted">${TR_DATE(r.tarih)}</span>
+      <span>${r.ev} – ${r.dep}<span class="ss">${TR_DATE(r.tarih)} · ${t('set', r.set)} ${r.skor}</span></span>
+      <span class="d">${t('set', r.set)} ${r.skor}</span>
+      <span><b>${t('len', r.hucum, r.temas)}</b><div class="bar"><i style="width:${Math.round(100 * r.hucum / mx)}%"></i></div></span>
+      <span class="w">${r.kazanan}</span>
+      ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : `<span class="muted">${t('novid')}</span>`}
+    </div>`;
+  });
+  $('list').innerHTML = html;
+  syncUrl();
+  bindRows();
+}
+
 function render() {
+  if (MODE === 'uzun') return renderUzun();
   const team = $('team').value, m = $('match').value, p = $('pl').value;
   const types = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
-  SHOWN = ROWS.filter(r => r.takim === team && (!m || r.mac_id === m) && (!p || r.oyuncu === p) && types.includes(r.tur));
+  SHOWN = ROWS.filter(r => (team === ALL || r.takim === team) && weekOk(r) && (!m || r.mac_id === m) &&
+                           (!p || r.oyuncu === p) && types.includes(r.tur));
   const vid = SHOWN.filter(r => r.saniye !== null).length;
   $('summary').textContent = `${counts(SHOWN)} · ${t('withvideo', vid)}`;
   if (!SHOWN.length) { $('list').innerHTML = `<div class="msg">${t('empty')}</div>`; syncUrl(); return; }
   let html = '', last = null;
-  SHOWN.forEach((r, i) => {
+  SHOWN.slice(0, MAXROW).forEach((r, i) => {
     if (r.mac_id !== last) {
       html += `<div class="match">${TR_DATE(r.tarih)} · ${r.ev} – ${r.dep}</div>`;
       last = r.mac_id;
@@ -457,15 +571,10 @@ function render() {
       ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : `<span class="muted">${t('novid')}</span>`}
     </div>`;
   });
+  if (SHOWN.length > MAXROW) html += `<div class="msg">${t('toomany', MAXROW)}</div>`;
   $('list').innerHTML = html;
   syncUrl();
-  document.querySelectorAll('.row.click').forEach(el => {
-    el.onclick = () => play(+el.dataset.i);
-    el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(+el.dataset.i); } };
-  });
-  document.querySelectorAll('a[data-yt]').forEach(a => a.onclick = e => {
-    e.stopPropagation(); gc('youtube/' + SHOWN[+a.dataset.yt].oyuncu);
-  });
+  bindRows();
 }
 
 // YouTube oynatıcısı bir kez kurulur, sonra sadece video / saniye değişir (IFrame API): yeniden yüklenmez, telefonda
@@ -507,8 +616,9 @@ function reveal() {
   clearTimeout(FADE_T);
 }
 function caption(r) {
-  $('cap1').textContent = `${r.oyuncu} · ${TL(r.tur)}`;
-  $('cap2').innerHTML = `${t('set', r.set)} ${r.skor}<i> · ${r.ev} – ${r.dep}</i>`;
+  const [a, b] = lbl(r);
+  $('cap1').textContent = a;
+  $('cap2').innerHTML = `${b}<i> · ${r.ev} – ${r.dep}</i>`;
   $('cap').classList.add('on');
   clearTimeout(CAP_T); CAP_T = setTimeout(() => $('cap').classList.remove('on'), 3500);
 }
@@ -517,7 +627,7 @@ function finish() {                       // listenin sonu: kararır, ses kısı
   if (FINISHED) return;
   FINISHED = true;
   const p = $('pl').value;
-  $('endinfo').textContent = `${p || $('team').value} · ${counts(SHOWN.filter(x => x.saniye !== null))}`;
+  $('endinfo').textContent = `${MODE === 'uzun' ? t('tab_uzun') + ' · ' + teamName($('team').value) : p || teamName($('team').value)} · ${counts(SHOWN.filter(x => x.saniye !== null))}`;
   $('fade').classList.add('on'); $('endcard').classList.add('on'); $('cap').classList.remove('on');
   clearTimeout(FADE_T);
   if (VOL === null && YTP && YTP.getVolume) VOL = YTP.getVolume();
@@ -557,10 +667,10 @@ function play(i) {
   document.body.classList.add('playing');
   fitList();
   go(r);
-  $('now').textContent = `${r.oyuncu} · ${t('set', r.set)} ${r.skor} · ${TL(r.tur)}`;
-  gc('izle/' + r.oyuncu);
-  document.querySelectorAll('.row.on').forEach(e => e.classList.remove('on'));
-  const el = document.querySelector(`.row[data-i="${i}"]`); if (el) el.classList.add('on');
+  $('now').textContent = lbl(r).join(' · ');
+  gc('izle/' + (r.oyuncu || 'ralli'));
+  document.querySelectorAll('.row.on, .urow.on').forEach(e => e.classList.remove('on'));
+  const el = document.querySelector(`#list [data-i="${i}"]`); if (el) el.classList.add('on');
   // ilk açılışta oynatıcıyı ekranın üstüne getir; seçili satır listede görünür kalsın
   const top = $('player').getBoundingClientRect().top;
   if (first || top > 1) window.scrollBy({top, behavior: 'smooth'});
@@ -581,7 +691,9 @@ setInterval(() => {
   const r = SHOWN[CUR];
   if (!r || YTP.getPlayerState() !== 1 || (YTP.getVideoData() || {}).video_id !== r.video) return;
   // dig'de tekrar beklenmez: yayın tekrarı genelde rallinin bitişini gösteriyor, dig'i değil
-  const end = sec(r) + Math.min(Math.max((r.bitis ?? r.saniye + 15) - r.saniye, 12), 45) + (r.tur === 'Dig' ? 4 : 20);
+  // uzun rallide süre sınırı yok (1–1,5 dakika sürebiliyor); tekrar da görünsün diye + 20 sn
+  const len = (r.bitis ?? r.saniye + 15) - r.saniye;
+  const end = sec(r) + (r.tur === 'Ralli' ? Math.max(len, 12) : Math.min(Math.max(len, 12), 45)) + (r.tur === 'Dig' ? 4 : 20);
   if (YTP.getCurrentTime() >= end && !FINISHED) step(1);
 }, 500);
 
@@ -590,18 +702,31 @@ function step(d) {
   if (d > 0 && CUR >= 0) finish();      // sonda: durdur, "Listenin sonu"
 }
 
-$('team').onchange = () => { CUR = -1; matches(); players(); render(); gc('takim/' + $('team').value); };
+$('team').onchange = () => { CUR = -1; matches(); players(); render(); gc('takim/' + teamName($('team').value)); };
+$('week').onchange = () => { CUR = -1; matches(); players(); render(); };
+$('kac').onchange = () => { CUR = -1; render(); };
+function showMode() {
+  document.body.dataset.mod = MODE;
+  document.querySelectorAll('.tab').forEach(b => { b.classList.toggle('on', b.dataset.mod === MODE); b.setAttribute('aria-selected', b.dataset.mod === MODE); });
+}
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
+  if (MODE === b.dataset.mod) return;
+  MODE = b.dataset.mod; CUR = -1; showMode(); render(); gc('sekme/' + MODE);
+});
 $('match').onchange = () => { CUR = -1; players(); render(); };
 $('pl').onchange = () => { CUR = -1; render(); if ($('pl').value) gc('oyuncu/' + $('pl').value); };
 document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; players(); render(); });
 $('prev').onclick = () => step(-1);
 $('sharelist').onclick = () => {
-  const p = $('pl').value, m = $('match');
-  share(stateUrl(), [p || $('team').value, m.value ? m.options[m.selectedIndex].text : '', counts(SHOWN)].filter(Boolean).join(' · '));
+  const p = $('pl').value, m = $('match'), w = $('week');
+  const wt = w.value ? w.options[w.selectedIndex].text : '';
+  share(stateUrl(), (MODE === 'uzun' ? [t('tab_uzun'), teamName($('team').value), wt]
+                     : [p || teamName($('team').value), wt, m.value ? m.options[m.selectedIndex].text : '', counts(SHOWN)])
+                     .filter(Boolean).join(' · '));
 };
 $('shareclip').onclick = () => {
   const r = SHOWN[CUR]; if (!r) return;
-  share(stateUrl(clipId(r)), `${r.oyuncu} · ${TL(r.tur)} · ${t('set', r.set)} ${r.skor} · ${r.ev} – ${r.dep}`);
+  share(stateUrl(clipId(r)), `${lbl(r).join(' · ')} · ${r.ev} – ${r.dep}`);
 };
 $('again').onclick = () => { CUR = -1; step(1); };
 function setFs(on) {
@@ -651,9 +776,9 @@ function applyLang() {
   showOff(); lead();
   if (ROWS.length) {                     // seçimler korunur, metinler yeni dilde
     const m = $('match').value, p = $('pl').value;
-    matches(); $('match').value = m; players(); $('pl').value = p; render();
-    if (CUR >= 0 && SHOWN[CUR]) { const r = SHOWN[CUR]; $('now').textContent = `${r.oyuncu} · ${t('set', r.set)} ${r.skor} · ${TL(r.tur)}`;
-      document.querySelector(`.row[data-i="${CUR}"]`)?.classList.add('on'); }
+    teams(); weeks(); matches(); $('match').value = m; players(); $('pl').value = p; render();
+    if (CUR >= 0 && SHOWN[CUR]) { $('now').textContent = lbl(SHOWN[CUR]).join(' · ');
+      document.querySelector(`[data-i="${CUR}"]`)?.classList.add('on'); }
   }
 }
 $('lang').onclick = () => {
@@ -671,7 +796,7 @@ fetch('sayi_videolari.json?v=' + Date.now(), {cache: 'no-store'})
     ROWS = expand(d);
     UPDATED = new Date(d.guncelleme);
     lead();
-    teams(); applyUrl();
+    teams(); weeks(); applyUrl();
   })
   .catch(e => fail(e.message));
 </script>
