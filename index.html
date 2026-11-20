@@ -118,7 +118,15 @@
   .frame .cap i { font-style:normal; }
   .player .bar { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px;
                  color:var(--mute); margin-top:6px; }
-  .summary { color:var(--mute); font-size:13px; margin:6px 0 4px; }
+  .summary { color:var(--mute); font-size:13px; }
+  .sumrow { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:6px 0 4px; }
+  button.share { padding:4px 10px; font-size:13px; white-space:nowrap; }
+  /* paylaşım bildirimi (bilgisayarda: link kopyalandı + X'te paylaş) */
+  .toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%, 20px); z-index:200; opacity:0;
+           pointer-events:none; transition:opacity .3s, transform .3s; background:#1c2027; border:1px solid #3a404a;
+           border-radius:10px; padding:10px 14px; font-size:14px; box-shadow:0 6px 24px rgba(0,0,0,.6); }
+  .toast.on { opacity:1; transform:translate(-50%, 0); pointer-events:auto; }
+  .toast a { margin-left:12px; font-weight:600; }
   .novideo { color:var(--mute); font-size:13px; margin:0 0 10px; }
   .match { margin:16px 0 4px; font-weight:600; font-size:14px; border-bottom:1px solid var(--line); padding-bottom:5px; }
   .row { display:grid; grid-template-columns:62px 62px 70px 1fr auto; gap:8px; align-items:center; padding:6px 6px;
@@ -203,13 +211,17 @@
           <button data-d="1">+1</button><button data-d="5">+5</button></span>
         <label class="auto" title="Ralli bitince listedeki bir sonraki sayıya geç"><input type="checkbox" id="auto"> Sırayla oynat</label>
         <span class="nav"><button id="prev">◀ Önceki</button> <button id="next">Sonraki ▶</button>
+          <button id="shareclip" title="Bu sayının linki">🔗</button>
           <button id="fs" title="Tam ekran (F)">⛶</button></span>
       </span></div>
   </div>
 
-  <div class="summary" id="summary"></div>
+  <div class="sumrow"><span class="summary" id="summary"></span>
+    <button class="share" id="sharelist" title="Bu listenin linki">🔗 Listeyi paylaş</button></div>
   <div class="novideo" id="novideo"></div>
   <div id="list"><div class="msg">Yükleniyor…</div></div>
+
+  <div class="toast" id="toast"></div>
 
   <footer>Kaynak: VolleyStation kaydı (hücum sayısı, blok sayısı, Ace; dig: istatistiği tutanın mükemmel ya da iyi
     notu verdiği kurtarmalar, ralli kaybedilmiş olabilir), TRT Spor ve TVF Voleybol TV'nin YouTube
@@ -224,6 +236,65 @@ const $ = id => document.getElementById(id);
 // GoatCounter olayları (çerezsiz; ziyaretçiyi tanımaz): takım / oyuncu seçimi, izlenen video, YouTube tıklaması
 const gc = (path, title) => { try { window.goatcounter && window.goatcounter.count({path, title: title || path, event: true}); } catch (e) {} };
 const TR_DATE = d => d.slice(8, 10) + '.' + d.slice(5, 7) + '.' + d.slice(0, 4);
+
+// Türkçe harf ve büyük-küçük harf farkı gözetmeden karşılaştırma ('Fenerbahçe' ~ 'FENERBAHCE', 'ı' ~ 'i')
+const fold = s => String(s).toLocaleLowerCase('tr').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+// listedeki seçenekler arasında: önce birebir, sonra başlayan, sonra içeren
+function pick(sel, want) {
+  if (!want) return false;
+  const w = fold(want), o = [...sel.options].filter(x => x.value);
+  const hit = o.find(x => fold(x.value) === w) || o.find(x => fold(x.value).startsWith(w)) || o.find(x => fold(x.value).includes(w));
+  if (hit) sel.value = hit.value;
+  return !!hit;
+}
+// tek bir sayının kimliği (linkte an=): maç_set_skor_tür
+const clipId = r => `${r.mac_id}_${r.set}_${r.skor}_${fold(r.tur)}`;
+
+// seçim adreste: ?takim=&mac=&oyuncu=&tur= (sayfa yenilenmeden güncellenir; link paylaşılınca aynı seçim açılır)
+function stateUrl(an) {
+  const q = new URLSearchParams();
+  q.set('takim', $('team').value);
+  if ($('match').value) q.set('mac', $('match').value);
+  if ($('pl').value) q.set('oyuncu', $('pl').value);
+  const ty = [...document.querySelectorAll('.types input')];
+  if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked).map(x => fold(x.value)).join(','));
+  if (an) q.set('an', an);
+  return location.origin + location.pathname + '?' + q.toString().replace(/%2C/g, ',').replace(/\+/g, '+');
+}
+function syncUrl() { try { history.replaceState(null, '', stateUrl()); } catch (e) {} }
+
+function applyUrl() {
+  const q = new URLSearchParams(location.search);
+  pick($('team'), q.get('takim'));
+  matches();
+  pick($('match'), q.get('mac'));
+  if (q.get('tur')) {
+    const want = q.get('tur').split(',').map(fold);
+    document.querySelectorAll('.types input').forEach(x => x.checked = want.includes(fold(x.value)));
+  }
+  players();
+  pick($('pl'), q.get('oyuncu'));
+  render();
+  const an = q.get('an');
+  if (an) {
+    const i = SHOWN.findIndex(r => clipId(r) === fold(an));
+    if (i >= 0) play(i);
+  }
+}
+
+// paylaş: telefonda sistemin paylaşma menüsü, bilgisayarda link kopyalanır + "X'te paylaş"
+let TOAST_T = null;
+async function share(url, text) {
+  gc('paylas/' + (text || '').split(' · ')[0]);
+  if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+    try { await navigator.share({title: 'Sultanlar Ligi · Sayı ve dig videoları', text, url}); return; } catch (e) { return; }
+  }
+  try { await navigator.clipboard.writeText(url); } catch (e) {}
+  const x = 'https://x.com/intent/post?text=' + encodeURIComponent(text + ' ' + url + ' via @SultanlarStat');
+  $('toast').innerHTML = `Link kopyalandı <a href="${x}">X'te paylaş</a>`;
+  $('toast').classList.add('on');
+  clearTimeout(TOAST_T); TOAST_T = setTimeout(() => $('toast').classList.remove('on'), 5000);
+}
 
 // küçük JSON'u satır nesnelerine açar (sayi_videolari.py: maclar / oyuncular / turler / satirlar)
 function expand(d) {
@@ -298,7 +369,7 @@ function render() {
   SHOWN = ROWS.filter(r => r.takim === team && (!m || r.mac_id === m) && (!p || r.oyuncu === p) && types.includes(r.tur));
   const vid = SHOWN.filter(r => r.saniye !== null).length;
   $('summary').textContent = `${counts(SHOWN)} · ${vid} tanesinin videosu var`;
-  if (!SHOWN.length) { $('list').innerHTML = '<div class="msg">Bu seçimde sayı yok.</div>'; return; }
+  if (!SHOWN.length) { $('list').innerHTML = '<div class="msg">Bu seçimde sayı yok.</div>'; syncUrl(); return; }
   let html = '', last = null;
   SHOWN.forEach((r, i) => {
     if (r.mac_id !== last) {
@@ -313,6 +384,7 @@ function render() {
     </div>`;
   });
   $('list').innerHTML = html;
+  syncUrl();
   document.querySelectorAll('.row.click').forEach(el => {
     el.onclick = () => play(+el.dataset.i);
     el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(+el.dataset.i); } };
@@ -449,6 +521,14 @@ $('match').onchange = () => { CUR = -1; players(); render(); };
 $('pl').onchange = () => { CUR = -1; render(); if ($('pl').value) gc('oyuncu/' + $('pl').value); };
 document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; players(); render(); });
 $('prev').onclick = () => step(-1);
+$('sharelist').onclick = () => {
+  const p = $('pl').value, m = $('match');
+  share(stateUrl(), [p || $('team').value, m.value ? m.options[m.selectedIndex].text : '', counts(SHOWN)].filter(Boolean).join(' · '));
+};
+$('shareclip').onclick = () => {
+  const r = SHOWN[CUR]; if (!r) return;
+  share(stateUrl(clipId(r)), `${r.oyuncu} · ${r.tur} · ${r.set}. set ${r.skor} · ${r.ev} – ${r.dep}`);
+};
 $('again').onclick = () => { CUR = -1; step(1); };
 function setFs(on) {
   const f = document.querySelector('.frame');
@@ -494,7 +574,7 @@ fetch('sayi_videolari.json?v=' + Date.now(), {cache: 'no-store'})
     $('sub').textContent = `Takım, maç ve oyuncu seç; hücum sayısı, blok sayısı, Ace ve dig'lerin listesi gelir. ` +
       `Satıra tıklayınca video o ralliden başlar, Önceki / Sonraki ile sayılar arasında geçilir. ` +
       `Son güncelleme ${u.toLocaleDateString('tr-TR')} ${u.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}.`;
-    teams(); matches(); players(); render();
+    teams(); applyUrl();
   })
   .catch(e => fail(e.message));
 </script>
