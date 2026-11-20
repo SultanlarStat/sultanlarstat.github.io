@@ -264,6 +264,7 @@
           <button data-d="1">+1</button><button data-d="5">+5</button></span>
         <label class="auto" data-it="auto_title" title="Ralli bitince listedeki bir sonraki sayıya geç"><input type="checkbox" id="auto"> <span data-t="auto">Sırayla oynat</span></label>
         <span class="nav"><button id="prev" data-t="prev">◀ Önceki</button> <button id="next" data-t="next">Sonraki ▶</button>
+          <button id="ytopen" data-it="ytopen" title="YouTube'da aç (şu anki saniyeden)">YouTube ↗</button>
           <button id="shareclip" data-it="shareclip" title="Bu sayının linki">🔗</button>
           <button id="fs" data-it="fs" title="Tam ekran (F)">⛶</button></span>
       </span></div>
@@ -301,7 +302,7 @@ const I18N = {
        dig_title: 'Mükemmel ve iyi dig (kurtarma); ralli kaybedilmiş olabilir', delay: 'Yayın gecikmesi',
        delay_title: 'Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)', auto: 'Sırayla oynat',
        auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', prev: '◀ Önceki', next: 'Sonraki ▶',
-       shareclip: 'Bu sayının linki', fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
+       shareclip: 'Bu sayının linki', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
        novideo_tag: ' (video yok)', novideo: 'Videosuna ulaşamadığımız maçlar: ', all_players: 'Bütün oyuncular',
@@ -321,7 +322,7 @@ const I18N = {
        dig_title: 'Perfect and good digs; the rally may have been lost', delay: 'Broadcast delay',
        delay_title: 'If the clip starts early press +, if late − (remembered in this browser)', auto: 'Play next',
        auto_title: 'When the rally ends, go to the next one in the list', prev: '◀ Prev', next: 'Next ▶',
-       shareclip: 'Link to this point', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
+       shareclip: 'Link to this point', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
        end: 'End of list', again: '↺ Restart', fexit: 'Exit full screen', fnext: 'Next', fprev: 'Previous',
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
        novideo_tag: ' (no video)', novideo: 'Matches without video: ', all_players: 'All players',
@@ -729,6 +730,14 @@ $('shareclip').onclick = () => {
   share(stateUrl(clipId(r)), `${lbl(r).join(' · ')} · ${r.ev} – ${r.dep}`);
 };
 $('again').onclick = () => { CUR = -1; step(1); };
+// oynayan videoyu YouTube'da şu anki saniyeden aç (oynatıcı durdurulur, iki yerde ses olmasın)
+$('ytopen').onclick = () => {
+  const r = SHOWN[CUR]; if (!r) return;
+  const at = YTP && YTP.getCurrentTime ? Math.floor(YTP.getCurrentTime()) : sec(r);
+  try { YTP.pauseVideo(); } catch (e) {}
+  gc('youtube/' + (r.oyuncu || 'ralli'));
+  window.open(`https://www.youtube.com/watch?v=${r.video}&t=${at}s`, '_blank');
+};
 function setFs(on) {
   const f = document.querySelector('.frame');
   f.classList.toggle('fs', on);
