@@ -268,6 +268,7 @@
           <button data-d="-5">−5</button><button data-d="-1">−1</button><b id="off">0 sn</b>
           <button data-d="1">+1</button><button data-d="5">+5</button></span>
         <label class="auto" data-it="auto_title" title="Ralli bitince listedeki bir sonraki sayıya geç"><input type="checkbox" id="auto"> <span data-t="auto">Sırayla oynat</span></label>
+        <label class="auto" data-it="replay_title" title="Sıradakine geçmeden yayındaki tekrarı da bekle (dig'lerde beklenmez)"><input type="checkbox" id="replay"> <span data-t="replay">Tekrarı izle</span></label>
         <span class="nav"><button id="prev" data-t="prev">◀ Önceki</button> <button id="next" data-t="next">Sonraki ▶</button>
           <button id="ytopen" data-it="ytopen" title="YouTube'da aç (şu anki saniyeden)">YouTube ↗</button>
           <button id="shareclip" data-it="shareclip" title="Bu sayının linki">🔗</button>
@@ -306,7 +307,8 @@ const I18N = {
        player: 'Oyuncu', tur_hucum: 'Hücum', tur_blok: 'Blok', tur_ace: 'Ace', tur_dig: 'Dig',
        dig_title: 'Mükemmel ve iyi dig (kurtarma); ralli kaybedilmiş olabilir', delay: 'Yayın gecikmesi',
        delay_title: 'Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)', auto: 'Sırayla oynat',
-       auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', prev: '◀ Önceki', next: 'Sonraki ▶',
+       auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', replay: 'Tekrarı izle',
+       replay_title: "Sıradakine geçmeden yayındaki tekrarı da bekle (dig'lerde beklenmez)", prev: '◀ Önceki', next: 'Sonraki ▶',
        shareclip: 'Bu sayının linki', home: 'Ana sayfa', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
@@ -326,7 +328,8 @@ const I18N = {
        player: 'Player', tur_hucum: 'Attack', tur_blok: 'Block', tur_ace: 'Ace', tur_dig: 'Dig',
        dig_title: 'Perfect and good digs; the rally may have been lost', delay: 'Broadcast delay',
        delay_title: 'If the clip starts early press +, if late − (remembered in this browser)', auto: 'Play next',
-       auto_title: 'When the rally ends, go to the next one in the list', prev: '◀ Prev', next: 'Next ▶',
+       auto_title: 'When the rally ends, go to the next one in the list', replay: 'Watch replay',
+       replay_title: 'Wait for the broadcast replay before moving on (not for digs)', prev: '◀ Prev', next: 'Next ▶',
        shareclip: 'Link to this point', home: 'Home', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
        end: 'End of list', again: '↺ Restart', fexit: 'Exit full screen', fnext: 'Next', fprev: 'Previous',
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
@@ -693,14 +696,21 @@ let AUTO = true;
 try { AUTO = localStorage.getItem('auto') !== '0'; } catch (e) {}
 $('auto').checked = AUTO;
 $('auto').onchange = () => { AUTO = $('auto').checked; try { localStorage.setItem('auto', AUTO ? '1' : '0'); } catch (e) {} };
+let REPLAY = true;
+try { REPLAY = localStorage.getItem('replay') !== '0'; } catch (e) {}
+$('replay').checked = REPLAY;
+$('replay').onchange = () => { REPLAY = $('replay').checked; gc('tekrar/' + (REPLAY ? 'acik' : 'kapali'));
+  try { localStorage.setItem('replay', REPLAY ? '1' : '0'); } catch (e) {} };
 setInterval(() => {
   if (!AUTO || !YTP || !YTP.getCurrentTime || CUR < 0) return;
   const r = SHOWN[CUR];
   if (!r || YTP.getPlayerState() !== 1 || (YTP.getVideoData() || {}).video_id !== r.video) return;
   // dig'de tekrar beklenmez: yayın tekrarı genelde rallinin bitişini gösteriyor, dig'i değil
-  // uzun rallide süre sınırı yok (1–1,5 dakika sürebiliyor); tekrar da görünsün diye + 20 sn
+  // uzun rallide süre sınırı yok (1–1,5 dakika sürebiliyor). Bitişten sonra: "Tekrarı izle" açıksa + 20 sn (yayın
+  // tekrarı), kapalıysa + 6 sn (bazı maçlarda zaman kayması var; tabela düzeltmesinden sonra küçültülebilir); dig + 4
   const len = (r.bitis ?? r.saniye + 15) - r.saniye;
-  const end = sec(r) + (r.tur === 'Ralli' ? Math.max(len, 12) : Math.min(Math.max(len, 12), 45)) + (r.tur === 'Dig' ? 4 : 20);
+  const after = r.tur === 'Dig' ? 4 : REPLAY ? 20 : 6;
+  const end = sec(r) + (r.tur === 'Ralli' ? Math.max(len, 12) : Math.min(Math.max(len, 12), 45)) + after;
   if (YTP.getCurrentTime() >= end && !FINISHED) step(1);
 }, 500);
 
