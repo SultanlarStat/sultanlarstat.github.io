@@ -125,6 +125,7 @@
          border-radius:6px; font-size:14px; }
   .row.click { cursor:pointer; }
   .row.click:hover, .row.on { background:var(--card2); }
+  .row.click:focus-visible { outline:2px solid var(--acc); outline-offset:-2px; }
   .row.on { box-shadow:inset 3px 0 0 var(--acc); }
   .row .who { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .tag { font-size:12px; font-weight:700; }
@@ -237,7 +238,12 @@ function fail(msg) {
   $('sub').textContent = '';
   $('list').innerHTML = `<div class="msg">Veri okunamadı: ${msg}</div>`;
 }
-window.onerror = (m, src, line) => fail(`${m} (satır ${line})`);
+// sadece bu sayfanın kendi hatası ve veri henüz yüklenmemişken: YouTube / GoatCounter betiklerindeki bir hata
+// ("Script error.") listeyi silmesin
+window.addEventListener('error', e => {
+  if (!ROWS.length && e.filename && e.filename.split('?')[0] === location.href.split('?')[0])
+    fail(`${e.message} (satır ${e.lineno})`);
+});
 
 function opts(sel, items, keep) {
   const old = keep ? sel.value : null;
@@ -300,14 +306,17 @@ function render() {
       last = r.mac_id;
     }
     const url = r.saniye !== null ? `https://www.youtube.com/watch?v=${r.video}&t=${sec(r)}s` : '';
-    html += `<div class="row${url ? ' click' : ''}" data-i="${i}">
+    html += `<div class="row${url ? ' click' : ''}" data-i="${i}"${url ? ' tabindex="0" role="button"' : ''}>
       <span class="muted">${r.set}. set</span><span>${r.skor}</span>
       <span class="tag t-${r.tur}">${r.tur}</span><span class="who">${p ? '' : r.oyuncu}</span>
       ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : '<span class="muted">video yok</span>'}
     </div>`;
   });
   $('list').innerHTML = html;
-  document.querySelectorAll('.row.click').forEach(el => el.onclick = () => play(+el.dataset.i));
+  document.querySelectorAll('.row.click').forEach(el => {
+    el.onclick = () => play(+el.dataset.i);
+    el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(+el.dataset.i); } };
+  });
   document.querySelectorAll('a[data-yt]').forEach(a => a.onclick = e => {
     e.stopPropagation(); gc('youtube/' + SHOWN[+a.dataset.yt].oyuncu);
   });
@@ -324,7 +333,10 @@ function load(video, start) {
     YTP = new YT.Player('yt', {videoId: video, playerVars: {start, autoplay: 1, rel: 0, playsinline: 1,
                                                               fs: 0, origin: location.origin},   // tam ekran: #fs
                                events: {onReady: e => e.target.playVideo(),
-                                        onStateChange: e => { if (e.data === 1) reveal(); }}});
+                                        onStateChange: e => {
+                                          if (e.data === 1) reveal();
+                                          else if (e.data === 0 && AUTO && CUR >= 0 && !FINISHED) step(1);   // video bitti
+                                        }}});
     return;
   }
   const cur = YTP.getVideoData && YTP.getVideoData().video_id;
@@ -369,14 +381,18 @@ function finish() {                       // listenin sonu: kararır, ses kısı
   });
 }
 
+let TRANS = null;                         // geçiş (kararma) sürüyorsa hedef sayı
 function go(r) {
   if (FINISHED) { FINISHED = false; $('endcard').classList.remove('on'); }
+  if (TRANS) { TRANS = r; return; }       // hızlı tıklama: yeni geçiş başlatma, kararma bitince son seçilen açılır
   const playing = YTP && YTP.getPlayerState && YTP.getPlayerState() === 1;
   if (!playing) { load(r.video, sec(r)); caption(r); return; }
+  TRANS = r;
   $('fade').classList.add('on');
   if (VOL === null && YTP.getVolume) VOL = YTP.getVolume();
   rampVolume(0, 1000, () => setTimeout(() => {          // 1 sn kararma + kısa siyah an, sonra yeni sayı
-    load(r.video, sec(r)); caption(r);
+    const t = TRANS; TRANS = null;
+    load(t.video, sec(t)); caption(t);
     clearTimeout(FADE_T); FADE_T = setTimeout(reveal, 2000);   // telefon otomatik başlatmazsa siyah kalmasın
   }, 250));
 }
