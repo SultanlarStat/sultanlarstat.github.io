@@ -405,6 +405,7 @@ function applyUrl() {
   if (q.get('kac') && [...$('kac').options].some(o => o.value === q.get('kac'))) $('kac').value = q.get('kac');
   matches();
   pick($('match'), q.get('mac'));
+  if (!location.search) document.querySelector('.types input[value="Dig"]').checked = false;   // ilk açılış: dig'ler kapalı
   if (q.get('tur')) {
     const want = q.get('tur').split(',').map(fold);
     document.querySelectorAll('.types input').forEach(x => x.checked = want.includes(fold(x.value)));
