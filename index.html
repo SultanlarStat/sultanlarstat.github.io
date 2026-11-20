@@ -10,11 +10,11 @@
 <meta property="og:description" content="Takım, maç ve oyuncu seç; oyuncunun sayıları ve dig'leri videoda o andan başlar.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sultanlarstat.github.io/">
-<meta property="og:image" content="https://sultanlarstat.github.io/kapak.png">
+<meta property="og:image" content="https://sultanlarstat.github.io/kapak.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://sultanlarstat.github.io/kapak.png">
+<meta name="twitter:image" content="https://sultanlarstat.github.io/kapak.png?v=2">
 <meta name="twitter:site" content="@SultanlarStat">
 <meta name="theme-color" content="#000000">
 <!-- ana ekrana eklenince uygulama gibi açılır (adres çubuğu yok; iPhone'da tam ekran ancak böyle) -->
@@ -320,7 +320,7 @@ const I18N = {
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
        novideo_tag: ' (video yok)', novideo: 'Videosuna ulaşamadığımız maçlar: ', all_players: 'Bütün oyuncular',
-       points: n => `${n} sayı`, digs: n => `${n} dig`, withvideo: n => `${n} tanesinin videosu var`,
+       points: n => `${n} sayı`, digs: n => `${n} dig`, n_hucum: n => `${n} hücum sayısı`, n_blok: n => `${n} blok sayısı`, n_ace: n => `${n} Ace`, withvideo: n => `${n} tanesinin videosu var`,
        empty: 'Bu seçimde sayı yok.', set: n => `${n}. set`, novid: 'video yok', copied: 'Link kopyalandı',
        share_x: "X'te paylaş", sec: 'sn', lang_btn: 'EN',
        tab_sayi: "Sayılar ve dig'ler", tab_uzun: 'En uzun ralliler', all_teams: 'Bütün takımlar', week: 'Hafta',
@@ -342,6 +342,7 @@ const I18N = {
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
        novideo_tag: ' (no video)', novideo: 'Matches without video: ', all_players: 'All players',
        points: n => `${n} point${n === 1 ? '' : 's'}`, digs: n => `${n} dig${n === 1 ? '' : 's'}`,
+       n_hucum: n => `${n} attack point${n === 1 ? '' : 's'}`, n_blok: n => `${n} block point${n === 1 ? '' : 's'}`, n_ace: n => `${n} ace${n === 1 ? '' : 's'}`,
        withvideo: n => `${n} with video`, empty: 'Nothing in this selection.', set: n => `Set ${n}`,
        novid: 'no video', copied: 'Link copied', share_x: 'Share on X', sec: 's', lang_btn: 'TR',
        tab_sayi: 'Points & digs', tab_uzun: 'Longest rallies', all_teams: 'All teams', week: 'Week',
@@ -518,10 +519,15 @@ function players() {
 }
 
 // "48 sayı · 30 dig" (dig sayı değil, ayrı sayılır)
+// sayı türlerinin hepsi seçili değilse türüyle: "59 Ace", "40 hücum sayısı · 12 blok sayısı"
 function counts(rows) {
   if (MODE === 'uzun') return t('rallies', rows.length);
-  const d = rows.filter(r => r.tur === 'Dig').length, n = rows.length - d;
-  return [n ? t('points', n) : '', d ? t('digs', d) : ''].filter(Boolean).join(' · ') || t('points', 0);
+  const on = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
+  const pts = ['Hücum', 'Blok', 'Ace'], c = tur => rows.filter(r => r.tur === tur).length;
+  const d = c('Dig'), n = rows.length - d;
+  const p = pts.every(x => on.includes(x)) ? [n ? t('points', n) : '']
+          : pts.filter(x => on.includes(x)).map(x => t('n_' + fold(x), c(x)));
+  return [...p, d ? t('digs', d) : ''].filter(Boolean).join(' · ') || t('points', 0);
 }
 
 // videodaki saniye, ziyaretçinin başlangıç ayarıyla
