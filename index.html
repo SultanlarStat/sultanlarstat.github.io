@@ -399,15 +399,17 @@ const clipId = r => `${r.mac_id}_${r.set}_${r.skor}_${fold(r.tur)}`;
 // kart sürümü: X önizlemeyi adrese göre günlerce saklıyor; kapak.png değişince KART ve kapak.png?v= birlikte artırılır,
 // yeni paylaşılan linkler yeni görselle çıkar (21.11.2026)
 const KART = 2;
-function stateUrl(an) {
+// linkte adlar harfsiz (Fenerbahce, Eda+Erdem+Dundar; %C3%A7 gibi kodlar görünmesin); pick() harflerden bağımsız eşleşir
+const latin = v => v.replace(/ı/g, 'i').replace(/İ/g, 'I').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function stateUrl(an, noTeam) {          // noTeam: takım sayfasının adresinde (t/<takım>/) takım zaten var
   const q = new URLSearchParams();
   if (MODE === 'uzun') q.set('mod', 'uzun');
-  q.set('takim', $('team').value === ALL ? 'hepsi' : $('team').value);
+  if (!noTeam) q.set('takim', $('team').value === ALL ? 'hepsi' : latin($('team').value));
   if ($('week').value) q.set('hafta', $('week').value);
   if (MODE === 'uzun') { if ($('kac').value !== '20') q.set('kac', $('kac').value); }
   else {
     if ($('match').value) q.set('mac', $('match').value);
-    if ($('pl').value) q.set('oyuncu', $('pl').value);
+    if ($('pl').value) q.set('oyuncu', latin($('pl').value));
     const ty = [...document.querySelectorAll('.types input')];
     if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked).map(x => fold(x.value)).join(','));
   }
@@ -425,7 +427,7 @@ function cardTeam() {
 }
 // paylaşılan link: takım belliyse takımın sayfası (X o sayfanın logolu kapağını gösterir, sayfa buraya yönlendirir)
 function shareUrl(an) {
-  const u = stateUrl(an), tm = cardTeam();
+  const tm = cardTeam(), u = stateUrl(an, tm && tm === $('team').value);
   const dir = location.origin + location.pathname.replace(/[^/]*$/, '');
   return tm ? dir + 't/' + slug(tm) + '/' + u.slice(u.indexOf('?')) : u;
 }

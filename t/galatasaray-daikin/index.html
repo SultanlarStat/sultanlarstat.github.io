@@ -13,7 +13,12 @@
 <meta name="twitter:image" content="https://sultanlarstat.github.io/kapak/galatasaray-daikin.png?v=2">
 <meta name="twitter:site" content="@SultanlarStat">
 <meta name="robots" content="noindex">
-<script>location.replace('../../' + (location.search || '?takim=' + encodeURIComponent('Galatasaray Daikin')) + location.hash);</script>
+<script>
+// paylaşılan linkte takım yok (adreste var): eklenir; diğer seçimler aynen ana sayfaya
+const q = new URLSearchParams(location.search);
+if (!q.has('takim')) q.set('takim', 'Galatasaray Daikin');
+location.replace('../../?' + q.toString().replace(/%2C/g, ',') + location.hash);
+</script>
 </head><body style="background:#000;color:#ccc;font-family:sans-serif">
-<p><a href="../../?takim=Galatasaray Daikin" style="color:#f5b301">Galatasaray Daikin · Sayı ve dig videoları</a></p>
+<p><a href="../../?takim=Galatasaray+Daikin" style="color:#f5b301">Galatasaray Daikin · Sayı ve dig videoları</a></p>
 </body></html>
