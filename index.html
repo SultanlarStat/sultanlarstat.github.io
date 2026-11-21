@@ -381,7 +381,9 @@ function pick(sel, want) {
   const w = fold(want), o = [...sel.options].filter(x => x.value);
   const words = v => fold(v).split(/\s+/).sort().join(' ');    // ad sırası değişmiş eski linkler (Tuğba Şenoğlu İvegin)
   const hit = o.find(x => fold(x.value) === w) || o.find(x => fold(x.value).startsWith(w)) || o.find(x => fold(x.value).includes(w))
-           || o.find(x => words(x.value) === words(want));
+           || o.find(x => words(x.value) === words(want))
+           || o.find(x => { const a = fold(x.value).split(/\s+/), ww = fold(want).split(/\s+/);    // ad kısalmış (Chloe çıktı)
+                            return a.length >= 2 && a.every(k => ww.includes(k)); });
   if (hit) sel.value = hit.value;
   return !!hit;
 }
