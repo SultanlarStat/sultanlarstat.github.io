@@ -379,7 +379,9 @@ const fold = s => String(s).toLocaleLowerCase('tr').replace(/ı/g, 'i').normaliz
 function pick(sel, want) {
   if (!want) return false;
   const w = fold(want), o = [...sel.options].filter(x => x.value);
-  const hit = o.find(x => fold(x.value) === w) || o.find(x => fold(x.value).startsWith(w)) || o.find(x => fold(x.value).includes(w));
+  const words = v => fold(v).split(/\s+/).sort().join(' ');    // ad sırası değişmiş eski linkler (Tuğba Şenoğlu İvegin)
+  const hit = o.find(x => fold(x.value) === w) || o.find(x => fold(x.value).startsWith(w)) || o.find(x => fold(x.value).includes(w))
+           || o.find(x => words(x.value) === words(want));
   if (hit) sel.value = hit.value;
   return !!hit;
 }
