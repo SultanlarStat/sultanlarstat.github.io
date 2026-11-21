@@ -497,15 +497,15 @@ function expand(d) {
   d.maclar.forEach(([, tarih, , , , h]) => { if (h) wk[h] = [h, wk[h] ? wk[h][1] < tarih ? wk[h][1] : tarih : tarih,
                                                              wk[h] ? wk[h][2] > tarih ? wk[h][2] : tarih : tarih]; });
   WEEKS = Object.values(wk).sort((a, b) => a[0] - b[0]);
-  RALLIES = (d.ralliler || []).map(([mi, set, skor, hucum, temas, side, sec, end]) => {
+  RALLIES = (d.ralliler || []).map(([mi, set, skor, hucum, temas, side, sec, end, nx]) => {
     const [mac_id, tarih, ev, dep, video, hafta] = d.maclar[mi];
     return {mac_id, tarih, ev, dep, video, hafta, set, skor, hucum, temas, kazanan: side ? dep : ev, oyuncu: '',
-            tur: 'Ralli', saniye: sec, bitis: end};
+            tur: 'Ralli', saniye: sec, bitis: end, sinir: nx ?? null};
   });
-  return d.satirlar.map(([mi, set, skor, side, pi, ti, sec, end]) => {
+  return d.satirlar.map(([mi, set, skor, side, pi, ti, sec, end, nx]) => {
     const [mac_id, tarih, ev, dep, video, hafta] = d.maclar[mi];
     return {mac_id, tarih, ev, dep, video, hafta, set, skor, takim: side ? dep : ev, oyuncu: d.oyuncular[pi],
-            tur: d.turler[ti], saniye: sec, bitis: end};
+            tur: d.turler[ti], saniye: sec, bitis: end, sinir: nx ?? null};
   });
 }
 
@@ -784,7 +784,9 @@ setInterval(() => {
   // tekrarı), kapalıysa + 10 sn (kullanıcının ayarı; tabela düzeltmesinden sonra yeniden bakılacak); dig + 4
   const len = (r.bitis ?? r.saniye + 15) - r.saniye;
   const after = r.tur === 'Dig' ? 4 : REPLAY ? 20 : 10;
-  const end = sec(r) + (r.tur === 'Ralli' ? Math.max(len, 12) : Math.min(Math.max(len, 12), 45)) + after;
+  let end = sec(r) + (r.tur === 'Ralli' ? Math.max(len, 12) : Math.min(Math.max(len, 12), 45)) + after;
+  // en geç sonraki rallinin açılışında dur (tekrar beklerken sonraki servise sarkmasın; setin son rallisinde sınır yok)
+  if (r.sinir != null) end = Math.min(end, Math.max(r.sinir + OFF, sec(r) + Math.max(len, 4)));
   if (YTP.getCurrentTime() >= end && !FINISHED) step(1);
 }, 500);
 
