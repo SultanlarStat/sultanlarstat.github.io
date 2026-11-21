@@ -328,7 +328,7 @@ const I18N = {
        empty: 'Bu seçimde sayı yok.', set: n => `${n}. set`, novid: 'video yok', copied: 'Link kopyalandı',
        share_x: "X'te paylaş", sec: 'sn', lang_btn: 'EN',
        tab_sayi: "Sayılar ve dig'ler", tab_uzun: 'En uzun ralliler', all_teams: 'Bütün takımlar', week: 'Hafta',
-       all_season: 'Bütün sezon', latest_week: n => `Son hafta (${n}. hafta)`, week_n: (n, r) => `${n}. hafta · ${r}`, kac: 'Kaç ralli',
+       all_season: 'Bütün sezon', upto: (n, c) => `${n}. haftaya kadar ${c}`.trim(), latest_week: n => `Son hafta (${n}. hafta)`, week_n: (n, r) => `${n}. hafta · ${r}`, kac: 'Kaç ralli',
        len: (h, m) => `${h} hücum · ${m} temas`, rank: k => `En uzun ${k}. ralli`, rallies: n => `${n} ralli`,
        uzun_sum: n => `En uzun ${n} ralli · hücum sayısına göre, eşitlikte temas`, h_date: 'Tarih', h_match: 'Maç',
        h_set: 'Set · skor', h_len: 'Uzunluk', h_won: 'Kazanan',
@@ -350,7 +350,7 @@ const I18N = {
        withvideo: n => `${n} with video`, empty: 'Nothing in this selection.', set: n => `Set ${n}`,
        novid: 'no video', copied: 'Link copied', share_x: 'Share on X', sec: 's', lang_btn: 'TR',
        tab_sayi: 'Points & digs', tab_uzun: 'Longest rallies', all_teams: 'All teams', week: 'Week',
-       all_season: 'Whole season', latest_week: n => `Latest week (week ${n})`, week_n: (n, r) => `Week ${n} · ${r}`, kac: 'How many',
+       all_season: 'Whole season', upto: (n, c) => `${c} through week ${n}`.trim(), latest_week: n => `Latest week (week ${n})`, week_n: (n, r) => `Week ${n} · ${r}`, kac: 'How many',
        len: (h, m) => `${h} attacks · ${m} contacts`, rank: k => `Longest rally #${k}`,
        rallies: n => `${n} rall${n === 1 ? 'y' : 'ies'}`, uzun_sum: n => `Longest ${n} rallies · by attacks, then contacts`,
        h_date: 'Date', h_match: 'Match', h_set: 'Set · score', h_len: 'Length', h_won: 'Won by',
@@ -427,7 +427,7 @@ function cardTeam() {
 }
 // paylaşılan link: takım belliyse takımın sayfası (X o sayfanın logolu kapağını gösterir, sayfa buraya yönlendirir)
 function shareUrl(an) {
-  const tm = cardTeam(), u = stateUrl(an, tm && tm === $('team').value);
+  const tm = cardTeam(), u = stateUrl(an, tm && tm === $('team').value).replace('hafta=' + LAST, 'hafta=' + weekNo());
   const dir = location.origin + location.pathname.replace(/[^/]*$/, '');
   return tm ? dir + 't/' + slug(tm) + '/' + u.slice(u.indexOf('?')) : u;
 }
@@ -796,11 +796,16 @@ $('match').onchange = () => { CUR = -1; players(); render(); };
 $('pl').onchange = () => { CUR = -1; render(); if ($('pl').value) gc('oyuncu/' + $('pl').value); };
 document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; players(); render(); });
 $('prev').onclick = () => step(-1);
+// paylaşılan metin linkle her zaman tutsun (kullanıcının isteği, 21.11.2026): "son hafta" linkte haftanın numarası
+// (shareUrl), metinde "9. hafta"; bütün sezonda sayı paylaşıldığı güne ait: "9. haftaya kadar 61 sayı"
 $('sharelist').onclick = () => {
-  const p = $('pl').value, m = $('match'), w = $('week');
-  const wt = w.value ? w.options[w.selectedIndex].text : '';
-  share(shareUrl(), (MODE === 'uzun' ? [t('tab_uzun'), teamName($('team').value), wt]
-                     : [p || teamName($('team').value), wt, m.value ? m.options[m.selectedIndex].text : '', counts(SHOWN)])
+  const p = $('pl').value, m = $('match'), w = $('week'), wn = weekNo();
+  const wo = [...w.options].find(o => o.value === wn);
+  const wt = w.value ? (wo || w.options[w.selectedIndex]).text : '';
+  const upto = !w.value && !(MODE === 'sayi' && m.value) && WEEKS.length, last = upto && WEEKS[WEEKS.length - 1][0];
+  share(shareUrl(), (MODE === 'uzun' ? [t('tab_uzun'), teamName($('team').value), wt || (upto ? t('upto', last, '') : '')]
+                     : [p || teamName($('team').value), wt, m.value ? m.options[m.selectedIndex].text : '',
+                        upto ? t('upto', last, counts(SHOWN)) : counts(SHOWN)])
                      .filter(Boolean).join(' · '));
 };
 $('shareclip').onclick = () => {
