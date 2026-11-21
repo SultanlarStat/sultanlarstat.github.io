@@ -48,6 +48,8 @@
   .hero .home:hover .ball { transform:rotate(-25deg); }
   .hero .kicker { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); font-weight:700; }
   .hero h1 { margin:2px 0 0; font-size:26px; line-height:1.1; letter-spacing:-.01em; }
+  .hero .tlogo { width:46px; height:46px; object-fit:contain; flex:none; background:#f1f1f4; border-radius:50%; padding:5px;
+                 box-sizing:border-box; box-shadow:0 0 0 2px var(--acc); }
   .hero .x { margin-left:auto; display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid #333;
              border-radius:999px; color:var(--fg); font-size:14px; background:rgba(255,255,255,.04); white-space:nowrap; }
   .hero .x svg { width:15px; height:15px; fill:var(--fg); }
@@ -55,7 +57,8 @@
   /* iki dilli uzun metinler: sadece seçili dil görünür */
   html[lang="en"] .l-tr, html[lang="tr"] .l-en { display:none; }
   .hero .lead { position:relative; margin:12px 0 0; color:var(--mute); font-size:13.5px; max-width:780px; }
-  @media (max-width:640px) { .hero h1 { font-size:21px; } .hero .x span { display:none; } .hero .ball { width:38px; height:38px; }
+  @media (max-width:640px) { .hero .top { gap:10px; } .hero .home { gap:10px; min-width:0; } .hero .home > div { min-width:0; }
+                             .hero .tlogo { width:34px; height:34px; padding:3px; } .hero .lang { margin-left:4px; } .hero h1 { font-size:21px; } .hero .x span { display:none; } .hero .ball { width:38px; height:38px; }
                              .hero .kicker { font-size:11px; letter-spacing:.06em; white-space:nowrap; } }
 
   .filters { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:10px; }
@@ -195,6 +198,7 @@
         <h1 data-t="h1">Sayı ve dig videoları</h1>
       </div>
       </a>
+      <img id="tlogo" class="tlogo" alt="" hidden>
       <a class="x" href="https://x.com/SultanlarStat" title="X'te @SultanlarStat">
         <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8.1-9.3L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.1 3.9H5.1L17.7 20Z"/></svg>
         <span>@SultanlarStat</span></a>
@@ -407,7 +411,26 @@ function stateUrl(an) {
   q.set('v', KART);
   return location.origin + location.pathname + '?' + q.toString().replace(/%2C/g, ',').replace(/\+/g, '+');
 }
-function syncUrl() { try { history.replaceState(null, '', stateUrl()); } catch (e) {} }
+// takım sayfasının adı: kapak.py'deki slug() ile aynı kural (t/<ad>/, kapak/<ad>.png, logo/<ad>.png)
+const slug = s => fold(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function cardTeam() {
+  const team = $('team').value;
+  if (team && team !== ALL) return team;
+  const p = MODE === 'sayi' && $('pl').value, rs = p ? ROWS.filter(r => r.oyuncu === p) : [];
+  return rs.length ? rs[rs.length - 1].takim : '';
+}
+// paylaşılan link: takım belliyse takımın sayfası (X o sayfanın logolu kapağını gösterir, sayfa buraya yönlendirir)
+function shareUrl(an) {
+  const u = stateUrl(an), tm = cardTeam();
+  const dir = location.origin + location.pathname.replace(/[^/]*$/, '');
+  return tm ? dir + 't/' + slug(tm) + '/' + u.slice(u.indexOf('?')) : u;
+}
+function showLogo() {
+  const tm = cardTeam(), img = $('tlogo');
+  img.hidden = !tm;
+  if (tm) { img.src = 'logo/' + slug(tm) + '.png'; img.alt = img.title = tm; }
+}
+function syncUrl() { showLogo(); try { history.replaceState(null, '', stateUrl()); } catch (e) {} }
 
 function applyUrl() {
   const q = new URLSearchParams(location.search);
@@ -770,13 +793,13 @@ $('prev').onclick = () => step(-1);
 $('sharelist').onclick = () => {
   const p = $('pl').value, m = $('match'), w = $('week');
   const wt = w.value ? w.options[w.selectedIndex].text : '';
-  share(stateUrl(), (MODE === 'uzun' ? [t('tab_uzun'), teamName($('team').value), wt]
+  share(shareUrl(), (MODE === 'uzun' ? [t('tab_uzun'), teamName($('team').value), wt]
                      : [p || teamName($('team').value), wt, m.value ? m.options[m.selectedIndex].text : '', counts(SHOWN)])
                      .filter(Boolean).join(' · '));
 };
 $('shareclip').onclick = () => {
   const r = SHOWN[CUR]; if (!r) return;
-  share(stateUrl(clipId(r)), `${lbl(r).join(' · ')} · ${r.ev} – ${r.dep}`);
+  share(shareUrl(clipId(r)), `${lbl(r).join(' · ')} · ${r.ev} – ${r.dep}`);
 };
 $('again').onclick = () => { CUR = -1; step(1); };
 // oynayan videoyu YouTube'da şu anki saniyeden aç (oynatıcı durdurulur, iki yerde ses olmasın)
