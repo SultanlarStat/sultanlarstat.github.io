@@ -53,10 +53,14 @@
   .hero .x { margin-left:auto; display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid #333;
              border-radius:999px; color:var(--fg); font-size:14px; background:rgba(255,255,255,.04); white-space:nowrap; }
   .hero .x svg { width:15px; height:15px; fill:var(--fg); }
+  .hero .help { margin-left:8px; width:32px; height:32px; flex:none; display:inline-flex; align-items:center; justify-content:center;
+                border:1px solid #333; border-radius:50%; color:var(--fg); font-weight:800; font-size:15px; background:rgba(255,255,255,.04); }
+  .hero .help:hover { border-color:var(--acc); color:var(--acc); }
   .hero .lang { padding:6px 10px; font-size:13px; font-weight:700; border-radius:999px; margin-left:8px; }
   /* iki dilli uzun metinler: sadece seçili dil görünür */
   html[lang="en"] .l-tr, html[lang="tr"] .l-en { display:none; }
   .hero .lead { position:relative; margin:12px 0 0; color:var(--mute); font-size:13.5px; max-width:780px; }
+  @media (max-width:440px) { .hero .help { display:none; } }
   @media (max-width:640px) { .hero .top { gap:10px; } .hero .home { gap:10px; min-width:0; } .hero .home > div { min-width:0; }
                              .hero .tlogo { width:34px; height:34px; padding:3px; } .hero .lang { margin-left:4px; } .hero h1 { font-size:21px; } .hero .x span { display:none; } .hero .ball { width:38px; height:38px; }
                              .hero .kicker { font-size:11px; letter-spacing:.06em; white-space:nowrap; } }
@@ -202,6 +206,7 @@
       <a class="x" href="https://x.com/SultanlarStat" title="X'te @SultanlarStat">
         <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.8l-5.3-6.9L4.8 22H1.7l8.1-9.3L1 2h7l4.8 6.3L18.9 2Zm-1.2 18h1.9L7.1 3.9H5.1L17.7 20Z"/></svg>
         <span>@SultanlarStat</span></a>
+      <a class="help" id="help" href="yardim.html" target="_self" data-it="help" title="Yardım ve sık sorulan sorular">?</a>
       <button class="lang" id="lang" title="Türkçe / English">EN</button>
     </div>
     <p class="lead" id="sub" data-t="loading">Veri yükleniyor…</p>
@@ -245,6 +250,7 @@
     <p><b>Video açılmıyor mu?</b> Bazı yayınlar yayıncının ayarı yüzünden Türkiye dışında izlenemiyor ("Bu video
       ülkenizde kullanılamıyor"); bunu sitede değiştiremiyoruz. Altyazı kapalı başlar, oynatıcıdaki CC düğmesiyle
       açılabilir.</p>
+    <p>Bütün düğmeler, zaman ayarı ve sık sorulan sorular: <a href="yardim.html" target="_self">Yardım</a>.</p>
     </div>
     <div class="l-en">
     <p><b>When the clip starts.</b> The moment in the video is computed from the rally start time in the VolleyStation
@@ -263,6 +269,7 @@
       Türkiye ("This video is not available in your country"); this is not something the site can change. The
       broadcasts are in Turkish. Captions start off; turn them on with the CC button in the player (YouTube can also
       auto-translate them).</p>
+    <p>All controls, timing and FAQ: <a href="yardim.html" target="_self">Help</a>.</p>
     </div>
   </details>
 
@@ -320,7 +327,7 @@ const I18N = {
        delay_title: 'Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)', auto: 'Sırayla oynat',
        auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', replay: 'Tekrarı izle',
        replay_title: "Sıradakine geçmeden yayındaki tekrarı da bekle (dig'lerde beklenmez)", prev: '◀ Önceki', next: 'Sonraki ▶',
-       shareclip: 'Bu sayının linki', home: 'Ana sayfa', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
+       help: 'Yardım ve sık sorulan sorular', help_link: 'Yardım ve sık sorulan sorular →', shareclip: 'Bu sayının linki', home: 'Ana sayfa', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
        novideo_tag: ' (video yok)', novideo: 'Videosuna ulaşamadığımız maçlar: ', all_players: 'Bütün oyuncular',
@@ -341,7 +348,7 @@ const I18N = {
        delay_title: 'If the clip starts early press +, if late − (remembered in this browser)', auto: 'Play next',
        auto_title: 'When the rally ends, go to the next one in the list', replay: 'Watch replay',
        replay_title: 'Wait for the broadcast replay before moving on (not for digs)', prev: '◀ Prev', next: 'Next ▶',
-       shareclip: 'Link to this point', home: 'Home', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
+       help: 'Help and FAQ', help_link: 'Help and FAQ →', shareclip: 'Link to this point', home: 'Home', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
        end: 'End of list', again: '↺ Restart', fexit: 'Exit full screen', fnext: 'Next', fprev: 'Previous',
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
        novideo_tag: ' (no video)', novideo: 'Matches without video: ', all_players: 'All players',
@@ -858,6 +865,7 @@ function lead() {
   if (!UPDATED) return;
   const loc = LANG === 'tr' ? 'tr-TR' : 'en-GB';
   $('sub').textContent = t('lead', `${UPDATED.toLocaleDateString(loc)} ${UPDATED.toLocaleTimeString(loc, {hour: '2-digit', minute: '2-digit'})}`);
+  $('sub').append(' ', Object.assign(document.createElement('a'), {href: 'yardim.html', target: '_self', textContent: t('help_link')}));
 }
 function applyLang() {
   document.documentElement.lang = LANG;

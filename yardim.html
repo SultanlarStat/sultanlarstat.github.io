@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yardım · Sayı ve dig videoları</title>
+<meta name="description" content="Sultanlar Ligi sayı ve dig videoları: nasıl kullanılır, video servisten başlamıyorsa ne yapılır, sık sorulan sorular.">
+<meta property="og:title" content="Yardım · Sayı ve dig videoları">
+<meta property="og:description" content="Nasıl kullanılır, zaman ayarı, sık sorulan sorular · How to use, timing, FAQ">
+<meta property="og:image" content="https://sultanlarstat.github.io/kapak.png?v=2">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://sultanlarstat.github.io/kapak.png?v=2">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon-180.png">
+<script data-goatcounter="https://sultanlarstat.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14'/%3E%3Cg fill='none' stroke='%23f5b301' stroke-width='4' stroke-linecap='round'%3E%3Ccircle cx='32' cy='32' r='24'/%3E%3Cpath d='M32 8c-5 9-5 19 0 24M32 32c10 1 18-3 23-11M32 32c-4 9-13 14-23 13'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  :root { --bg:#000; --fg:#eef0f3; --mute:#9aa1ad; --line:#262a31; --card:#111318; --acc:#f5b301; --link:#7cb7ff; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color:var(--link); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  html[lang="en"] .l-tr, html[lang="tr"] .l-en { display:none; }
+  .wrap { max-width:880px; margin:0 auto; padding:0 16px 40px; }
+  @media (display-mode: standalone) { .wrap { padding-top:env(safe-area-inset-top); } }
+  header { display:flex; align-items:center; gap:12px; padding:18px 0 14px; border-bottom:1px solid var(--line); }
+  header .ball { width:40px; height:40px; flex:none; }
+  header .kicker { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); font-weight:700; }
+  header h1 { margin:2px 0 0; font-size:23px; line-height:1.15; }
+  header .sp { margin-left:auto; display:flex; gap:8px; align-items:center; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border:1px solid #333; border-radius:999px;
+         color:var(--fg); background:rgba(255,255,255,.04); font:600 13.5px/1.2 inherit; cursor:pointer; white-space:nowrap; }
+  .btn:hover { border-color:var(--acc); text-decoration:none; }
+  nav.toc { margin:16px 0 4px; display:flex; flex-wrap:wrap; gap:8px; }
+  nav.toc a { font-size:13.5px; padding:5px 11px; border:1px solid var(--line); border-radius:999px; color:var(--fg); }
+  h2 { margin:34px 0 10px; font-size:19px; scroll-margin-top:12px; }
+  h2::before { content:""; display:inline-block; width:4px; height:17px; background:var(--acc); border-radius:2px;
+               margin-right:9px; vertical-align:-2px; }
+  h3 { margin:20px 0 4px; font-size:15.5px; }
+  p { margin:8px 0; }
+  .mute { color:var(--mute); }
+  figure { margin:14px 0; }
+  figure img { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:10px; }
+  figcaption { color:var(--mute); font-size:13px; margin-top:6px; }
+  ol.keys { list-style:none; padding:0; margin:10px 0; display:grid; grid-template-columns:repeat(auto-fill, minmax(380px, 1fr)); gap:6px 22px; }
+  @media (max-width:640px) { ol.keys { grid-template-columns:1fr; } }
+  ol.keys li { display:flex; gap:10px; align-items:flex-start; }
+  ol.keys li b.n { flex:none; width:24px; height:24px; border-radius:50%; background:var(--acc); color:#000; font-size:13px;
+                   display:inline-flex; align-items:center; justify-content:center; margin-top:1px; }
+  .steps { counter-reset:s; list-style:none; padding:0; margin:10px 0; }
+  .steps li { counter-increment:s; position:relative; padding:9px 12px 9px 44px; margin:6px 0; background:var(--card);
+              border:1px solid var(--line); border-radius:10px; }
+  .steps li::before { content:counter(s); position:absolute; left:12px; top:9px; width:22px; height:22px; border-radius:50%;
+                       border:1.5px solid var(--acc); color:var(--acc); font-weight:700; font-size:12.5px;
+                       display:flex; align-items:center; justify-content:center; }
+  kbd { font:600 12.5px/1 ui-monospace, Menlo, monospace; padding:3px 6px; border:1px solid #444; border-bottom-width:2px;
+        border-radius:5px; background:#15171c; }
+  .stat { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin:14px 0; }
+  @media (max-width:640px) { .stat { grid-template-columns:1fr; } }
+  .stat div { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .stat b { display:block; font-size:24px; color:var(--acc); line-height:1.2; }
+  .stat span { color:var(--mute); font-size:13px; }
+  details { background:var(--card); border:1px solid var(--line); border-radius:10px; margin:8px 0; }
+  details summary { cursor:pointer; padding:11px 14px; font-weight:600; list-style:none; }
+  details summary::-webkit-details-marker { display:none; }
+  details summary::before { content:"+"; display:inline-block; width:18px; color:var(--acc); font-weight:800; }
+  details[open] summary::before { content:"−"; }
+  details > div { padding:0 14px 10px 32px; }
+  code { font:12.5px ui-monospace, Menlo, monospace; background:#15171c; padding:1px 5px; border-radius:4px; }
+  footer { margin-top:40px; padding-top:14px; border-top:1px solid var(--line); color:var(--mute); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a href="./" target="_self" aria-label="Ana sayfa">
+    <svg class="ball" viewBox="0 0 64 64" fill="none" stroke="#f5b301" stroke-width="3" stroke-linecap="round">
+      <circle cx="32" cy="32" r="28"/><path d="M32 4c-6 10-6 22 0 28M32 32c11 1 21-4 27-13M32 32c-5 10-15 16-27 15"/>
+      <path d="M14 11c9 2 16 9 18 21M58 40c-9-5-19-6-26-8M22 58c3-10 4-18 10-26"/></svg></a>
+  <div>
+    <div class="kicker">Vodafone Sultanlar Ligi</div>
+    <h1><span class="l-tr">Yardım ve sık sorulan sorular</span><span class="l-en">Help and FAQ</span></h1>
+  </div>
+  <div class="sp">
+    <a class="btn" href="./" target="_self"><span class="l-tr">← Videolar</span><span class="l-en">← Videos</span></a>
+    <button class="btn" id="lang">EN</button>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#ekran"><span class="l-tr">Ekran</span><span class="l-en">The screen</span></a>
+  <a href="#tam"><span class="l-tr">Tam ekran</span><span class="l-en">Full screen</span></a>
+  <a href="#zaman"><span class="l-tr">Video servisten başlamıyorsa</span><span class="l-en">Clip not starting at the serve</span></a>
+  <a href="#dogruluk"><span class="l-tr">Zamanlama ne kadar doğru?</span><span class="l-en">How accurate is the timing?</span></a>
+  <a href="#sss"><span class="l-tr">Sık sorulan sorular</span><span class="l-en">FAQ</span></a>
+</nav>
+
+<p class="l-tr">Bu sitede Sultanlar Ligi'ndeki her hücum sayısı, blok sayısı, Ace ve iyi dig'in (kurtarma) maç
+  videosundaki anı var. Takımı, haftayı, maçı ya da oyuncuyu seçersin; listeden bir satıra tıklayınca video o rallinin
+  servisinden başlar. <b>Sırayla oynat</b> açıksa ralli bitince sıradakine geçer, bir oyuncunun bütün sayılarını arka
+  arkaya izleyebilirsin.</p>
+<p class="l-en">This site has the moment in the match video of every attack point, block point, ace and good dig in the
+  Sultanlar League. Pick a team, week, match or player; click a row and the video starts at the serve of that rally.
+  With <b>Play next</b> on, it moves to the next one when the rally ends, so you can watch all of a player's points in a
+  row.</p>
+
+<h2 id="ekran"><span class="l-tr">Ekran</span><span class="l-en">The screen</span></h2>
+<figure>
+  <a href="yardim/ana.jpg" target="_blank"><img src="yardim/ana.jpg" width="1100" height="1395" alt="Sitenin ekranı, numaralı düğmeler / The site with numbered controls"></a>
+  <figcaption class="l-tr">Numaralar aşağıdaki listede. Bilgisayar ekranı; telefonda aynı düğmeler alt alta. Büyütmek için görsele dokun.</figcaption>
+  <figcaption class="l-en">Numbers are explained below. Desktop screen; on a phone the same controls stack vertically. Tap the image to enlarge.</figcaption>
+</figure>
+<ol class="keys l-tr">
+  <li><b class="n">1</b><span><b>Sekmeler.</b> Sayılar ve dig'ler ya da en uzun ralliler (en az 4 hücumlu ralliler, hücum sayısına göre).</span></li>
+  <li><b class="n">2</b><span><b>Takım.</b> Bütün takımlar ya da bir takım; takım seçiliyken başlıkta takımın logosu çıkar.</span></li>
+  <li><b class="n">3</b><span><b>Hafta.</b> Bütün sezon, son hafta ya da belli bir hafta.</span></li>
+  <li><b class="n">4</b><span><b>Maç.</b> Seçili takımın / haftanın maçları; videosu olmayan maçta "video yok" yazar.</span></li>
+  <li><b class="n">5</b><span><b>Oyuncu.</b> Parantezdeki sayı oyuncunun bu seçimdeki sayı / dig sayısı.</span></li>
+  <li><b class="n">6</b><span><b>Türler.</b> Hücum, blok, Ace, dig; işareti kaldırılan tür listeden çıkar.</span></li>
+  <li><b class="n">7</b><span><b>Satır.</b> Tıkla, video bu rallinin servisinden başlasın. Oynayan satır sarı çizgiyle işaretli.</span></li>
+  <li><b class="n">8</b><span><b>YouTube ↗.</b> Videoyu YouTube'da aynı saniyeden açar.</span></li>
+  <li><b class="n">9</b><span><b>Yayın gecikmesi.</b> Video erken başlıyorsa +, geç başlıyorsa −. Ayrıntısı <a href="#zaman">aşağıda</a>.</span></li>
+  <li><b class="n">10</b><span><b>Sırayla oynat.</b> Ralli bitince listedeki sıradakine geçer.</span></li>
+  <li><b class="n">11</b><span><b>Tekrarı izle.</b> Sıradakine geçmeden yayındaki tekrarı da bekler (dig'lerde beklemez).</span></li>
+  <li><b class="n">12</b><span><b>Önceki / Sonraki.</b> Listede bir önceki / sonraki sayı. Klavyede <kbd>←</kbd> <kbd>→</kbd>.</span></li>
+  <li><b class="n">13</b><span><b>YouTube ↗.</b> Oynayan videoyu YouTube'da şu anki saniyeden açar (sayfadaki oynatıcı durur).</span></li>
+  <li><b class="n">14</b><span><b>🔗 Bu sayının linki.</b> Sadece bu sayıyı açan link; telefonda paylaşma menüsü açılır.</span></li>
+  <li><b class="n">15</b><span><b>Tam ekran.</b> Klavyede <kbd>F</kbd>. Tam ekrandaki düğmeler <a href="#tam">aşağıda</a>.</span></li>
+  <li><b class="n">16</b><span><b>Listeyi paylaş.</b> Bu seçimi (takım, hafta, oyuncu, türler) açan link; X'te takımın kapağıyla görünür.</span></li>
+  <li><b class="n">17</b><span><b>?</b> Bu sayfa. Dar telefon ekranında giriş metninin sonundaki "Yardım" linki.</span></li>
+  <li><b class="n">18</b><span><b>EN / TR.</b> Dil; tarayıcıda hatırlanır.</span></li>
+</ol>
+<ol class="keys l-en">
+  <li><b class="n">1</b><span><b>Tabs.</b> Points and digs, or the longest rallies (rallies with at least 4 attacks, ranked by attacks).</span></li>
+  <li><b class="n">2</b><span><b>Team.</b> All teams or one team; with a team selected, its logo appears in the header.</span></li>
+  <li><b class="n">3</b><span><b>Week.</b> Whole season, latest week or a given week.</span></li>
+  <li><b class="n">4</b><span><b>Match.</b> Matches of the selected team / week; matches without video say "no video".</span></li>
+  <li><b class="n">5</b><span><b>Player.</b> The number in brackets is the player's points / digs in this selection.</span></li>
+  <li><b class="n">6</b><span><b>Types.</b> Attack, block, ace, dig; untick a type to hide it.</span></li>
+  <li><b class="n">7</b><span><b>Row.</b> Click it and the video starts at the serve of that rally. The playing row has a yellow mark.</span></li>
+  <li><b class="n">8</b><span><b>YouTube ↗.</b> Opens the video on YouTube at the same second.</span></li>
+  <li><b class="n">9</b><span><b>Broadcast delay.</b> + if the clip starts too early, − if too late. Details <a href="#zaman">below</a>.</span></li>
+  <li><b class="n">10</b><span><b>Play next.</b> When the rally ends, goes on to the next one in the list.</span></li>
+  <li><b class="n">11</b><span><b>Watch replay.</b> Waits for the broadcast replay before moving on (not for digs).</span></li>
+  <li><b class="n">12</b><span><b>Prev / Next.</b> Previous / next point in the list. Keyboard <kbd>←</kbd> <kbd>→</kbd>.</span></li>
+  <li><b class="n">13</b><span><b>YouTube ↗.</b> Opens the playing video on YouTube from the current second (the embedded player stops).</span></li>
+  <li><b class="n">14</b><span><b>🔗 Link to this point.</b> A link that opens just this point; on a phone the share menu opens.</span></li>
+  <li><b class="n">15</b><span><b>Full screen.</b> Keyboard <kbd>F</kbd>. Full-screen controls are <a href="#tam">below</a>.</span></li>
+  <li><b class="n">16</b><span><b>Share list.</b> A link to this selection (team, week, player, types); on X it shows the team's card.</span></li>
+  <li><b class="n">17</b><span><b>?</b> This page. On a narrow phone screen, the "Help" link at the end of the intro text.</span></li>
+  <li><b class="n">18</b><span><b>EN / TR.</b> Language; remembered in this browser.</span></li>
+</ol>
+
+<h2 id="tam"><span class="l-tr">Tam ekran</span><span class="l-en">Full screen</span></h2>
+<figure>
+  <a href="yardim/tam.jpg" target="_blank"><img src="yardim/tam.jpg" width="1100" height="620" alt="Tam ekran / Full screen"></a>
+</figure>
+<ol class="keys l-tr">
+  <li><b class="n">19</b><span><b>✕</b> Tam ekrandan çık. Klavyede <kbd>Esc</kbd>.</span></li>
+  <li><b class="n">20</b><span><b>▶</b> Sonraki sayı. Klavyede <kbd>→</kbd>.</span></li>
+  <li><b class="n">21</b><span><b>◀</b> Önceki sayı. Klavyede <kbd>←</kbd>.</span></li>
+  <li><b class="n">22</b><span><b>Alt yazı.</b> Her sayının başında birkaç saniye: oyuncu, tür, set ve skor, maç.</span></li>
+</ol>
+<ol class="keys l-en">
+  <li><b class="n">19</b><span><b>✕</b> Exit full screen. Keyboard <kbd>Esc</kbd>.</span></li>
+  <li><b class="n">20</b><span><b>▶</b> Next point. Keyboard <kbd>→</kbd>.</span></li>
+  <li><b class="n">21</b><span><b>◀</b> Previous point. Keyboard <kbd>←</kbd>.</span></li>
+  <li><b class="n">22</b><span><b>Caption.</b> For a few seconds at the start of each point: player, type, set and score, match.</span></li>
+</ol>
+<p class="l-tr mute">iPhone'da tarayıcılar tam ekranda adres çubuğunu gizlemiyor; siteyi Safari'den ana ekrana eklersen
+  uygulama gibi açılır (<a href="#sss-iphone">aşağıda</a>).</p>
+<p class="l-en mute">On iPhone, browsers keep the address bar in full screen; add the site to the home screen from Safari
+  and it opens like an app (<a href="#sss-iphone-en">below</a>).</p>
+
+<h2 id="zaman"><span class="l-tr">Video servisten başlamıyorsa</span><span class="l-en">If the clip does not start at the serve</span></h2>
+<p class="l-tr">Video, servisten yaklaşık 2 saniye önce başlamalı. Erken ya da geç başlıyorsa oynatıcının altındaki
+  <b>Yayın gecikmesi</b> (9) ile ayarlayabilirsin:</p>
+<p class="l-en">The clip should start about 2 seconds before the serve. If it starts too early or too late, adjust it
+  with <b>Broadcast delay</b> (9) under the player:</p>
+<ol class="steps l-tr">
+  <li>Video <b>erken</b> başlıyorsa (servise çok var, önceki ralliden sonrası görünüyor) <b>+</b>'ya bas; <b>geç</b>
+    başlıyorsa (servis kaçıyor) <b>−</b>'ye bas. <b>±1</b> bir saniye, <b>±5</b> beş saniye kaydırır.</li>
+  <li>Her basışta video yeni ayarla baştan başlar; servis görünene kadar tekrarla.</li>
+  <li>Ayar bu tarayıcıda hatırlanır ve <b>bütün videolara</b> uygulanır ("YouTube ↗" linklerine de). O maçı izledikten
+    sonra 0'a dönmeyi unutma, yoksa diğer maçlar kayar.</li>
+  <li>Bir maçta video sürekli kayıksa bize yaz (<a href="https://x.com/SultanlarStat">@SultanlarStat</a>): maç, set ve
+    skor yeter. Maçın ayarını düzeltiriz, herkes için düzelir.</li>
+</ol>
+<ol class="steps l-en">
+  <li>If the clip starts <b>too early</b> (long before the serve, the end of the previous rally shows), press <b>+</b>;
+    if <b>too late</b> (the serve is missed), press <b>−</b>. <b>±1</b> shifts one second, <b>±5</b> five seconds.</li>
+  <li>Each press restarts the clip with the new setting; repeat until the serve shows.</li>
+  <li>The setting is remembered in this browser and applies to <b>all clips</b> (and the "YouTube ↗" links). Set it
+    back to 0 after that match, or other matches will be off.</li>
+  <li>If a match is consistently off, let us know (<a href="https://x.com/SultanlarStat">@SultanlarStat</a>): match, set
+    and score are enough. We fix that match's timing for everyone.</li>
+</ol>
+
+<h2 id="dogruluk"><span class="l-tr">Zamanlama ne kadar doğru?</span><span class="l-en">How accurate is the timing?</span></h2>
+<p class="l-tr">Videodaki an hesaplanıyor: VolleyStation kaydındaki rallinin başlama saati, YouTube yayınının başlama
+  saati ve yayının salondan gecikmesi. Gecikme maçtan maça değişiyor; bir kısmını videoda servis anını işaretleyerek
+  ölçtük, kalanlarda yayıncının ortalama gecikmesi kullanılıyor.</p>
+<p class="l-en">The moment in the video is computed from the rally start time in the VolleyStation record, the start
+  time of the YouTube broadcast and how far the broadcast lags behind the hall. The lag differs from match to match;
+  we measured it for some matches by marking the serve in the video, the others use the broadcaster's average.</p>
+<div class="stat">
+  <div><b id="s-olculen">–</b><span class="l-tr">maçta yayın gecikmesi videoda ölçüldü</span><span class="l-en">matches with the broadcast lag measured in the video</span></div>
+  <div><b id="s-tahmini">–</b><span class="l-tr">sayı ve dig'de başlangıç yaklaşık hesaplandı</span><span class="l-en">of points and digs have an estimated start</span></div>
+  <div><b id="s-satir">–</b><span class="l-tr">videolu sayı ve dig</span><span class="l-en">points and digs with video</span></div>
+</div>
+<p class="l-tr"><b>Yaklaşık hesaplananlar.</b> İstatistiği tutan bazı rallileri ralli bittikten sonra giriyor; kayıtta
+  bu rallinin başlama saati 15–50 saniye geç görünüyor. Bunları rallinin süresinden tanıyoruz (kayıtta 13 temaslı bir
+  ralli 2 saniye sürmüş görünüyor) ve başlangıcı rallinin bitişinden, temas sayısından ve önceki ralliden tahmin
+  ediyoruz. Videoda ölçtüğümüz örneklerde tahmin servisten en çok 4 saniye sapıyor; bu rallilerde Yayın gecikmesiyle
+  küçük bir ayar gerekebilir.</p>
+<p class="l-en"><b>Estimated starts.</b> The statistician enters some rallies only after they end; the record then
+  shows the rally starting 15–50 seconds late. We spot these from the rally length (a 13-contact rally that seems to
+  last 2 seconds) and estimate the start from the end of the rally, the number of contacts and the previous rally. In
+  the examples we checked in the video, the estimate is within 4 seconds of the serve; a small Broadcast delay tweak may
+  help on these.</p>
+
+<h2 id="sss"><span class="l-tr">Sık sorulan sorular</span><span class="l-en">FAQ</span></h2>
+<div class="l-tr">
+<details><summary>Hangi sayılar var? Dig nedir?</summary><div>
+  <p>Oyuncunun kendi kazandığı sayılar: hücum sayısı, blok sayısı ve Ace (servisle doğrudan sayı). Rakibin hatasından
+    gelen sayılar yok. Dig (kurtarma): istatistiği tutanın mükemmel ya da iyi notu verdiği savunmalar; dig'den sonra
+    ralli kaybedilmiş olabilir. İlk açılışta dig'ler kapalıdır, türlerden (6) açılır.</p></div></details>
+<details><summary>Veri nereden geliyor, ne zaman güncelleniyor?</summary><div>
+  <p>Sayılar VolleyStation kaydından (Sultanlar Ligi'nin resmi istatistiği), videolar TRT Spor ve TVF Voleybol TV'nin
+    YouTube yayınlarından. Maç günlerinden sonra güncelleniyor; son güncelleme ana sayfanın üstünde yazıyor. Kayıtta
+    maçtan sonraki birkaç gün içinde videodan düzeltmeler yapılabiliyor, bu yüzden bir maçın sayıları birkaç gün
+    içinde biraz değişebilir.</p></div></details>
+<details><summary>Neden bazı maçlarda video yok?</summary><div>
+  <p>Maçın yayın kaydını YouTube'da bulamadık ya da kaydın başlama saati yok. "Video yok" yazan maçlar ana sayfada
+    listenin üstünde yazar. Yayın sonradan yüklenirse eklenir.</p></div></details>
+<details><summary>YouTube Premium'dayım ama reklam çıkıyor</summary><div>
+  <p>Sayfadaki oynatıcı, tarayıcının üçüncü taraf çerez engeli yüzünden seni tanıyamıyor. Chrome'da: Ayarlar →
+    Gizlilik ve güvenlik → Üçüncü taraf çerezleri → İzin verilen siteler → Ekle → <code>[*.]youtube.com</code>, sonra
+    sayfayı yenile. "YouTube ↗" ise videoyu YouTube'da açar, orada Premium her durumda geçerli.</p></div></details>
+<details id="sss-iphone"><summary>iPhone'da tam ekran / ana ekrana ekleme</summary><div>
+  <p>iPhone'daki tarayıcılar tam ekranda adres çubuğunu gizlemiyor. Siteyi <b>Safari</b>'den ana ekrana ekle (Paylaş
+    ya da ••• → Ana Ekrana Ekle → Ekle); ana ekrandaki simgeden uygulama gibi, adres çubuğu olmadan açılır.
+    Android'de Chrome menüsünden "Ana ekrana ekle".</p></div></details>
+<details><summary>Video açılmıyor ("Bu video ülkenizde kullanılamıyor")</summary><div>
+  <p>Bazı yayınlar yayıncının ayarı yüzünden Türkiye dışında izlenemiyor; bunu sitede değiştiremiyoruz. Yayınlar
+    Türkçe; altyazı kapalı başlar, oynatıcıdaki CC düğmesiyle açılır.</p></div></details>
+<details><summary>Sırayla oynat ve Tekrarı izle ne zaman sıradakine geçiyor?</summary><div>
+  <p>Ralli bittikten sonra: Tekrarı izle kapalıyken 10 saniye, açıkken 20 saniye (yayındaki tekrar da görünsün diye);
+    dig'lerde 4 saniye. Geçişte ekran kısa bir süre kararır ve sıradaki sayının alt yazısı çıkar.</p></div></details>
+<details><summary>Linkler ne açıyor?</summary><div>
+  <p>Adres çubuğundaki link her zaman o anki seçimi (takım, hafta, maç, oyuncu, türler) açar. "Listeyi paylaş" (16)
+    bu seçimin linkini, 🔗 (14) sadece oynayan sayının linkini verir. "Son hafta" seçiliyken paylaşılan link haftanın
+    numarasıyla gider, böylece gelecek hafta da aynı sayıları açar.</p></div></details>
+<details><summary>En uzun ralliler nasıl sıralanıyor?</summary><div>
+  <p>En az 4 hücumlu ralliler, hücum sayısına göre; eşitlikte temas sayısına göre. Takım ve hafta seçilebilir; video
+    rallinin başından sonuna oynar.</p></div></details>
+<details><summary>Bu site kimin?</summary><div>
+  <p>Bağımsız, amatör bir voleybol meraklısının projesi; TVF, VolleyStation ya da yayıncılarla bir bağı yok. Görüş ve
+    öneriler için <a href="https://x.com/SultanlarStat">@SultanlarStat</a>.</p></div></details>
+</div>
+<div class="l-en">
+<details><summary>Which points are included? What is a dig?</summary><div>
+  <p>Points a player wins herself: attack points, block points and aces. Points from opponent errors are not included.
+    Digs: defensive touches graded perfect or good by the statistician; the rally may have been lost afterwards. Digs
+    are off when the site first opens; turn them on under types (6).</p></div></details>
+<details><summary>Where does the data come from, and when is it updated?</summary><div>
+  <p>Points come from the VolleyStation record (the league's official statistics), videos from the TRT Spor and TVF
+    Voleybol TV broadcasts on YouTube. It is updated after match days; the last update is shown at the top of the main
+    page. The record can be corrected from video in the days after a match, so a match's numbers may change slightly
+    for a few days.</p></div></details>
+<details><summary>Why is there no video for some matches?</summary><div>
+  <p>We could not find the broadcast on YouTube, or it has no start time. Matches marked "no video" are listed above
+    the list on the main page. If the broadcast is uploaded later, it is added.</p></div></details>
+<details><summary>I have YouTube Premium but see ads</summary><div>
+  <p>The embedded player cannot recognise you because of the browser's third-party cookie blocking. In Chrome:
+    Settings → Privacy and security → Third-party cookies → Allowed to use third-party cookies → Add →
+    <code>[*.]youtube.com</code>, then reload. "YouTube ↗" opens the video on YouTube, where Premium always applies.</p></div></details>
+<details id="sss-iphone-en"><summary>Full screen on iPhone / add to home screen</summary><div>
+  <p>Browsers on iPhone keep the address bar in full screen. Add the site to the home screen from <b>Safari</b> (Share
+    or ••• → Add to Home Screen → Add); it opens from the icon like an app, without the address bar. On Android, use
+    "Add to Home screen" in the Chrome menu.</p></div></details>
+<details><summary>Video not available ("not available in your country")</summary><div>
+  <p>Some broadcasts are geo-restricted by the broadcaster outside Türkiye; the site cannot change this. The broadcasts
+    are in Turkish; captions start off, turn them on with the CC button (YouTube can auto-translate them).</p></div></details>
+<details><summary>When do Play next and Watch replay move on?</summary><div>
+  <p>After the rally ends: 10 seconds with Watch replay off, 20 seconds with it on (so the broadcast replay shows);
+    4 seconds for digs. The screen briefly fades and the next point's caption appears.</p></div></details>
+<details><summary>What do the links open?</summary><div>
+  <p>The address bar always holds the current selection (team, week, match, player, types). "Share list" (16) gives a
+    link to this selection, 🔗 (14) a link to just the playing point. When "Latest week" is selected, the shared link
+    uses the week number, so it keeps opening the same points next week.</p></div></details>
+<details><summary>How are the longest rallies ranked?</summary><div>
+  <p>Rallies with at least 4 attacks, by number of attacks, then by contacts. Team and week can be selected; the video
+    plays the whole rally.</p></div></details>
+<details><summary>Who runs this site?</summary><div>
+  <p>An independent project by an amateur volleyball fan; not affiliated with TVF, VolleyStation or the broadcasters.
+    Feedback: <a href="https://x.com/SultanlarStat">@SultanlarStat</a>.</p></div></details>
+</div>
+
+<footer>
+  <span class="l-tr">Bağımsız, amatör bir voleybol meraklısının projesi · <a href="./" target="_self">Videolara dön</a></span>
+  <span class="l-en">An independent project by an amateur volleyball fan · <a href="./" target="_self">Back to the videos</a></span>
+</footer>
+</div>
+<script>
+// dil: ?lang= > bu tarayıcıda seçilen > tarayıcının dili (ana sayfayla aynı kural, aynı kayıt)
+let LANG = 'tr';
+try {
+  const q = new URLSearchParams(location.search).get('lang'), st = localStorage.getItem('lang');
+  LANG = ['tr', 'en'].includes(q) ? q : ['tr', 'en'].includes(st) ? st
+       : ((navigator.languages || [navigator.language || 'tr']).some(l => /^tr/i.test(l)) ? 'tr' : 'en');
+} catch (e) {}
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.getElementById('lang').textContent = LANG === 'tr' ? 'EN' : 'TR';
+  document.title = LANG === 'tr' ? 'Yardım · Sayı ve dig videoları' : 'Help · Point & dig videos';
+  fillStats();
+}
+document.getElementById('lang').onclick = () => {
+  LANG = LANG === 'tr' ? 'en' : 'tr';
+  try { localStorage.setItem('lang', LANG); } catch (e) {}
+  applyLang();
+};
+// rakamlar sitenin veri dosyasından (sayi_videolari.py her güncellemede yazar)
+let OZET = null;
+function fillStats() {
+  if (!OZET) return;
+  const loc = LANG === 'tr' ? 'tr-TR' : 'en-GB', pct = 100 * OZET.tahmini / OZET.satir;
+  document.getElementById('s-olculen').textContent = `${OZET.olculen} / ${OZET.mac}`;
+  document.getElementById('s-tahmini').textContent = (LANG === 'tr' ? '%' : '') + pct.toLocaleString(loc, {maximumFractionDigits: 1}) + (LANG === 'tr' ? '' : '%');
+  document.getElementById('s-satir').textContent = OZET.satir.toLocaleString(loc);
+}
+fetch('sayi_videolari.json').then(r => r.json()).then(d => { OZET = d.ozet; fillStats(); }).catch(() => {});
+applyLang();
+</script>
+</body>
+</html>
