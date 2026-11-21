@@ -94,6 +94,7 @@
   .offset b { color:var(--fg); min-width:40px; text-align:center; }
   .ctl { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; justify-content:flex-end; margin-left:auto; }
   .nav { white-space:nowrap; }
+  @media (max-width:640px) { .nav { white-space:normal; display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; } }
   label.auto { display:inline-flex; gap:5px; align-items:center; margin:0; font-size:13px; color:var(--fg); white-space:nowrap; }
   button { padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card2); color:var(--fg);
            font-size:14px; cursor:pointer; }
@@ -290,6 +291,7 @@
         <span class="nav"><button id="prev" data-t="prev">◀ Önceki</button> <button id="next" data-t="next">Sonraki ▶</button>
           <button id="ytopen" data-it="ytopen" title="YouTube'da aç (şu anki saniyeden)">YouTube ↗</button>
           <button id="shareclip" data-it="shareclip" title="Bu sayının linki">🔗</button>
+          <button id="shareyt" data-it="shareyt" title="YouTube linkiyle paylaş (X'te video oynar)">🔗 YouTube</button>
           <button id="fs" data-it="fs" title="Tam ekran (F)">⛶</button></span>
       </span></div>
   </div>
@@ -330,7 +332,7 @@ const I18N = {
        delay_title: 'Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)', auto: 'Sırayla oynat',
        auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', replay: 'Tekrarı izle',
        replay_title: "Sıradakine geçmeden yayındaki tekrarı da bekle (dig'lerde beklenmez)", prev: '◀ Önceki', next: 'Sonraki ▶',
-       help: 'Yardım ve sık sorulan sorular', help_link: 'Yardım ve sık sorulan sorular →', shareclip: 'Bu sayının linki', home: 'Ana sayfa', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
+       help: 'Yardım ve sık sorulan sorular', help_link: 'Yardım ve sık sorulan sorular →', shareclip: 'Bu sayının linki', shareyt: "YouTube linkiyle paylaş (X'te video oynar)", home: 'Ana sayfa', ytopen: "YouTube'da aç (şu anki saniyeden)", fs: 'Tam ekran (F)', sharelist: '🔗 Listeyi paylaş', sharelist_title: 'Bu listenin linki',
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
        novideo_tag: ' (video yok)', novideo: 'Videosuna ulaşamadığımız maçlar: ', all_players: 'Bütün oyuncular',
@@ -351,7 +353,7 @@ const I18N = {
        delay_title: 'If the clip starts early press +, if late − (remembered in this browser)', auto: 'Play next',
        auto_title: 'When the rally ends, go to the next one in the list', replay: 'Watch replay',
        replay_title: 'Wait for the broadcast replay before moving on (not for digs)', prev: '◀ Prev', next: 'Next ▶',
-       help: 'Help and FAQ', help_link: 'Help and FAQ →', shareclip: 'Link to this point', home: 'Home', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
+       help: 'Help and FAQ', help_link: 'Help and FAQ →', shareclip: 'Link to this point', shareyt: 'Share the YouTube link (plays inside the post on X)', home: 'Home', ytopen: 'Open on YouTube (from the current second)', fs: 'Full screen (F)', sharelist: '🔗 Share list', sharelist_title: 'Link to this list',
        end: 'End of list', again: '↺ Restart', fexit: 'Exit full screen', fnext: 'Next', fprev: 'Previous',
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
        novideo_tag: ' (no video)', novideo: 'Matches without video: ', all_players: 'All players',
@@ -821,6 +823,11 @@ $('sharelist').onclick = () => {
 $('shareclip').onclick = () => {
   const r = SHOWN[CUR]; if (!r) return;
   share(shareUrl(clipId(r)), `${lbl(r).join(' · ')} · ${r.ev} – ${r.dep}`);
+};
+// aynı metin, link YouTube'un (saniyeli): X gönderide YouTube kartını gösterir, video gönderinin içinde oynar
+$('shareyt').onclick = () => {
+  const r = SHOWN[CUR]; if (!r) return;
+  share(`https://youtu.be/${r.video}?t=${sec(r)}`, `${lbl(r).join(' · ')} · ${r.ev} – ${r.dep}`);
 };
 $('again').onclick = () => { CUR = -1; step(1); };
 // oynayan videoyu YouTube'da şu anki saniyeden aç (oynatıcı durdurulur, iki yerde ses olmasın)
