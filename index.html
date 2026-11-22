@@ -659,8 +659,10 @@ window.onYouTubeIframeAPIReady = () => { YT_READY = true; if (PENDING) load(...P
 function load(video, start) {
   if (!YT_READY) { PENDING = [video, start]; return; }
   if (!YTP) {
+    // controls 0: YouTube'un alt kontrol çubuğu gizli (kullanıcının isteği, 22.11.2026); oynatma sitenin düğmeleriyle.
+    // Başlık / logo gizlenemiyor (showinfo, modestbranding kaldırıldı; oynatıcının üstünü örtmek YouTube kurallarına aykırı)
     YTP = new YT.Player('yt', {videoId: video, playerVars: {start, autoplay: 1, rel: 0, playsinline: 1, cc_load_policy: 0,
-                                                              fs: 0, origin: location.origin},   // tam ekran: #fs
+                                                              fs: 0, controls: 0, origin: location.origin},   // tam ekran: #fs
                                events: {onReady: e => e.target.playVideo(),
                                         onStateChange: e => {
                                           if (e.data === 1) { reveal(); noCaptions(); }
