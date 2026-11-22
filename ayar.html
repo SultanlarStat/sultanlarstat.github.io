@@ -79,7 +79,9 @@ const bekleyen = m => (m[9] || []).filter(y => !olcSet(m[0]).has(y));
 function maclar() {
   const done = new Set(OL.map(o => o.mac));
   const keep = $('mac').value;
-  const bek = D.maclar.filter(m => bekleyen(m).length).sort((x, y) => bekleyen(x).length - bekleyen(y).length);   // yarım kalan önce
+  // en yeni maç önce (kullanıcı yeni maçlara önce bakıyor), aynı günde yarım kalan önce
+  const bek = D.maclar.filter(m => bekleyen(m).length)
+    .sort((x, y) => (y[1] > x[1]) - (y[1] < x[1]) || bekleyen(x).length - bekleyen(y).length);
   if (!$('hepsi').checked && bek.length) {
     const [id, tarih, ev, dep, , kanal] = bek[0];
     $('mac').innerHTML = `<option value="${id}">⏳ ${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
