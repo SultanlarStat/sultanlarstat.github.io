@@ -70,10 +70,22 @@ let OL = []; try { OL = JSON.parse(localStorage.getItem('ayar_olcum') || '[]'); 
 const kaydet = () => { try { localStorage.setItem('ayar_olcum', JSON.stringify(OL)); } catch (e) {} };
 window.onYouTubeIframeAPIReady = () => { READY = true; };
 
-// ölçülen maçlar (uygulanmış: veride; ya da bu tarayıcıda ölçülmüş) listeden düşer; "Ölçülenleri de göster" ile görünür
+// istenen ölçümler (⏳, veride m[9] = ["set:ev-dep", ...]) bu tarayıcıda ölçülmemiş olanlar
+const olcSet = id => new Set(OL.filter(o => o.mac === id).map(o => `${o.set}:${o.h}-${o.a}`));
+const bekleyen = m => (m[9] || []).filter(y => !olcSet(m[0]).has(y));
+
+// ölçülen maçlar (uygulanmış: veride; ya da bu tarayıcıda ölçülmüş) listeden düşer; "Ölçülenleri de göster" ile görünür.
+// Bekleyen ölçüm varsa sadece ilk bekleyen maç görünür (kullanıcının isteği, 22.11.2026: tek maç, yapılan yapılmayan karışmasın)
 function maclar() {
   const done = new Set(OL.map(o => o.mac));
   const keep = $('mac').value;
+  const bek = D.maclar.filter(m => bekleyen(m).length).sort((x, y) => bekleyen(x).length - bekleyen(y).length);   // yarım kalan önce
+  if (!$('hepsi').checked && bek.length) {
+    const [id, tarih, ev, dep, , kanal] = bek[0];
+    $('mac').innerHTML = `<option value="${id}">⏳ ${tarih.slice(8)}.${tarih.slice(5, 7)} ${ev} – ${dep} · ${kanal.startsWith('TRT') ? 'TRT' : 'TVF'}` +
+      ` · ${bekleyen(bek[0]).length} ralli kaldı (sırada ${bek.length - 1} maç)</option>`;
+    return;
+  }
   // bekleyen ölçümü (⏳) olan maç, ölçülmüş olsa da listede ve en başta
   const todo = m => (m[9] || []).length > 0;
   const ms = D.maclar.filter(m => $('hepsi').checked || todo(m) || !(m[8] || done.has(m[0]))).sort((x, y) => (todo(y) - todo(x)) || (y[7] - x[7]) || (Math.abs(y[6] ?? 0) - Math.abs(x[6] ?? 0)) || (x[1] < y[1] ? -1 : 1));
@@ -85,6 +97,15 @@ function maclar() {
 }
 function ralliler() {
   const r = D.ralliler[$('mac').value] || [];
+  const bm = bekleyen(mac() || []);
+  if (!$('hepsi').checked && bm.length) {         // sadece istenen, henüz ölçülmemiş ralliler
+    $('ralli').innerHTML = bm.map(y => {
+      const [n, sk] = y.split(':'), [h, a] = sk.split('-').map(Number);
+      const x = r.find(x => x[0] === +n && x[1] === h && x[2] === a);
+      return x ? `<option value="${x.join(',')}">${n}. set ${h}-${a}</option>` : '';
+    }).join('');
+    return;
+  }
   // önce set ortası ralliler (skor toplamı 15'i geçen ilk ralli): setin ilk rallisi kayıtta güvenilmez çıktı (Beşiktaş –
   // Göztepe, İlbank – Nilüfer); sonra set başları ve bütün ralliler
   const orta = [...new Set(r.map(x => x[0]))].map(n => r.find(x => x[0] === n && x[1] + x[2] >= 15)).filter(Boolean);
@@ -128,7 +149,12 @@ function burada() {
   OL.push({mac: m[0], ad: `${m[1]} ${m[2]} – ${m[3]}`, kanal: m[5], set: CUR[0], h: CUR[1], a: CUR[2], video: m[4],
            servis: t, acilis: CUR[3], duzeltme: duz});
   kaydet(); liste();          // ölçülen maç seçili kalır; başka maça geçince listeden düşer
-  $('sonuc').innerHTML = `Servis ${fmt(t)} · şu an ${fmt(CUR[3])}'te açılıyor · gereken düzeltme <b>${duz > 0 ? '+' : ''}${duz} sn</b>`;
+  const msg = `Servis ${fmt(t)} · şu an ${fmt(CUR[3])}'te açılıyor · gereken düzeltme <b>${duz > 0 ? '+' : ''}${duz} sn</b>`;
+  // istenen ölçümlerde sıradaki ralliye (maç bitince sıradaki maça) geç
+  if (!$('hepsi').checked && D.maclar.some(x => bekleyen(x).length)) {
+    maclar(); ralliler(); sec();
+    $('sonuc').innerHTML = `Önceki: ${m[2]} – ${m[3]}, ${OL[OL.length - 1].set}. set ${OL[OL.length - 1].h}-${OL[OL.length - 1].a} · ` + msg + ' · sıradaki açıldı';
+  } else $('sonuc').innerHTML = msg;
 }
 function liste() {
   $('say').textContent = `(${OL.length})`;
