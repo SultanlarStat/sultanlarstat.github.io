@@ -131,7 +131,14 @@ function sec() {
   $('bilgi').innerHTML = `<b>${m[2]} – ${m[3]}</b> · ${CUR[0]}. set, ralli öncesi skor ${CUR[1]}-${CUR[2]} · şu anki ayar bu ralliyi videonun ` +
     `<b>${fmt(CUR[3])}</b>'inde açıyor` + (m[6] !== null && m[6] !== undefined ? ` · tabela kontrolünün önerisi ${m[6] > 0 ? '+' : ''}${m[6]} sn` : '');
   $('sonuc').textContent = '';
-  ac(Math.max(CUR[3] - 10, 0));
+  // bu maçta ölçüm varsa (bu tarayıcıda) tahmini servis = açılış + ölçülen düzeltmelerin ortancası + 2; video servisten
+  // 5 sn önce açılır (kullanıcının önerisi, 22.11.2026). Ölçüm yoksa açılıştan 10 sn önce.
+  const dz = OL.filter(o => o.mac === m[0]).map(o => o.duzeltme).sort((a, b) => a - b);
+  if (dz.length) {
+    const med = dz.length % 2 ? dz[(dz.length - 1) / 2] : (dz[dz.length / 2 - 1] + dz[dz.length / 2]) / 2;
+    $('bilgi').innerHTML += ` · bu maçta ${dz.length} ölçüm: tahmini servis <b>${fmt(CUR[3] + med + 2)}</b>`;
+    ac(Math.max(CUR[3] + med - 3, 0));
+  } else ac(Math.max(CUR[3] - 10, 0));
 }
 function ac(t) {
   const id = mac()[4];
