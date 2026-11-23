@@ -175,9 +175,11 @@
   and it opens like an app (<a href="#sss-iphone-en">below</a>).</p>
 
 <h2 id="zaman"><span class="l-tr">Video servisten başlamıyorsa</span><span class="l-en">If the clip does not start at the serve</span></h2>
-<p class="l-tr">Video, servisten yaklaşık 2 saniye önce başlamalı. Erken ya da geç başlıyorsa oynatıcının altındaki
+<p class="l-tr">Video, hakemin servis izni düdüğüyle başlamalı; servis genellikle 3–8 saniye sonra gelir. Erken ya da
+  geç başlıyorsa oynatıcının altındaki
   <b>Yayın gecikmesi</b> (9) ile ayarlayabilirsin:</p>
-<p class="l-en">The clip should start about 2 seconds before the serve. If it starts too early or too late, adjust it
+<p class="l-en">The clip should start with the referee's whistle for the serve; the serve usually follows 3–8
+  seconds later. If it starts too early or too late, adjust it
   with <b>Broadcast delay</b> (9) under the player:</p>
 <ol class="steps l-tr">
   <li>Video <b>erken</b> başlıyorsa (servise çok var, önceki ralliden sonrası görünüyor) <b>+</b>'ya bas; <b>geç</b>
@@ -200,25 +202,31 @@
 
 <h2 id="dogruluk"><span class="l-tr">Zamanlama ne kadar doğru?</span><span class="l-en">How accurate is the timing?</span></h2>
 <p class="l-tr">Videodaki an hesaplanıyor: VolleyStation kaydındaki rallinin başlama saati, YouTube yayınının başlama
-  saati ve yayının salondan gecikmesi. Gecikme maçtan maça değişiyor; bir kısmını videoda servis anını işaretleyerek
-  ölçtük, kalanlarda yayıncının ortalama gecikmesi kullanılıyor.</p>
+  saati ve yayının salondan gecikmesi. Gecikme maçtan maça, bazen setten sete değişiyor. Bunu yayının sesindeki
+  hakem düdüklerinden buluyoruz: birinci hakem her servisten önce düdük çalıyor ve kayıttaki ralli başlangıcı bu
+  düdükle neredeyse aynı an. Düdükleri kayıttaki ralli saatleriyle hizalayınca her setin gecikmesi çıkıyor; çoğu
+  rallide video doğrudan o rallinin düdüğüyle açılıyor. Düdüğün seçilemediği setlerde gecikme videoda servis anı
+  işaretlenerek ölçüldü.</p>
 <p class="l-en">The moment in the video is computed from the rally start time in the VolleyStation record, the start
-  time of the YouTube broadcast and how far the broadcast lags behind the hall. The lag differs from match to match;
-  we measured it for some matches by marking the serve in the video, the others use the broadcaster's average.</p>
+  time of the YouTube broadcast and how far the broadcast lags behind the hall. The lag differs from match to match,
+  sometimes from set to set. We find it from the referee's whistles in the broadcast audio: the first referee blows the
+  whistle before every serve, and the rally start in the record is almost the same moment. Lining up the whistles with
+  the rally times gives each set's lag; most clips open right at that rally's own whistle. In sets where the whistle
+  cannot be picked out, the lag was measured by marking the serve in the video.</p>
 <div class="stat">
-  <div><b id="s-olculen">–</b><span class="l-tr">maçta yayın gecikmesi videoda ölçüldü</span><span class="l-en">matches with the broadcast lag measured in the video</span></div>
+  <div><b id="s-duduk">–</b><span class="l-tr">sayı ve dig hakemin düdüğüyle açılıyor</span><span class="l-en">of points and digs open at the referee's whistle</span></div>
   <div><b id="s-tahmini">–</b><span class="l-tr">sayı ve dig'de başlangıç yaklaşık hesaplandı</span><span class="l-en">of points and digs have an estimated start</span></div>
   <div><b id="s-satir">–</b><span class="l-tr">videolu sayı ve dig</span><span class="l-en">points and digs with video</span></div>
 </div>
 <p class="l-tr"><b>Yaklaşık hesaplananlar.</b> İstatistiği tutan bazı rallileri ralli bittikten sonra giriyor; kayıtta
   bu rallinin başlama saati 15–50 saniye geç görünüyor. Bunları rallinin süresinden tanıyoruz (kayıtta 13 temaslı bir
-  ralli 2 saniye sürmüş görünüyor) ve başlangıcı rallinin bitişinden, temas sayısından ve önceki ralliden tahmin
-  ediyoruz. Videoda ölçtüğümüz örneklerde tahmin servisten en çok 4 saniye sapıyor; bu rallilerde Yayın gecikmesiyle
-  küçük bir ayar gerekebilir.</p>
+  ralli 2 saniye sürmüş görünüyor) ve düdüğü tahmin edilen yerin çevresinde arıyoruz. Düdük de bulunamazsa başlangıç
+  rallinin bitişinden, temas sayısından ve önceki ralliden tahmin ediliyor; bu rallilerde Yayın gecikmesiyle küçük bir
+  ayar gerekebilir.</p>
 <p class="l-en"><b>Estimated starts.</b> The statistician enters some rallies only after they end; the record then
   shows the rally starting 15–50 seconds late. We spot these from the rally length (a 13-contact rally that seems to
-  last 2 seconds) and estimate the start from the end of the rally, the number of contacts and the previous rally. In
-  the examples we checked in the video, the estimate is within 4 seconds of the serve; a small Broadcast delay tweak may
+  last 2 seconds) and look for the whistle around the estimated start. If no whistle is found either, the start is
+  estimated from the end of the rally, the number of contacts and the previous rally; a small Broadcast delay tweak may
   help on these.</p>
 
 <h2 id="sss"><span class="l-tr">Sık sorulan sorular</span><span class="l-en">FAQ</span></h2>
@@ -344,7 +352,8 @@ let OZET = null;
 function fillStats() {
   if (!OZET) return;
   const loc = LANG === 'tr' ? 'tr-TR' : 'en-GB', pct = 100 * OZET.tahmini / OZET.satir;
-  document.getElementById('s-olculen').textContent = `${OZET.olculen} / ${OZET.mac}`;
+  const dd = 100 * (OZET.duduk || 0) / OZET.satir;
+  document.getElementById('s-duduk').textContent = (LANG === 'tr' ? '%' : '') + dd.toLocaleString(loc, {maximumFractionDigits: 0}) + (LANG === 'tr' ? '' : '%');
   document.getElementById('s-tahmini').textContent = (LANG === 'tr' ? '%' : '') + pct.toLocaleString(loc, {maximumFractionDigits: 1}) + (LANG === 'tr' ? '' : '%');
   document.getElementById('s-satir').textContent = OZET.satir.toLocaleString(loc);
 }
