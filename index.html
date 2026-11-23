@@ -89,6 +89,7 @@
            background:var(--card); color:var(--fg); }
   .types { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:6px 0 10px; font-size:14px; }
   .types label { display:inline-flex; gap:5px; align-items:center; color:var(--fg); font-size:14px; margin:0; }
+  .types label:has(input:disabled) { opacity:.45; }
   .offset { display:inline-flex; gap:5px; align-items:center; font-size:13px; color:var(--mute); white-space:nowrap; }
   .offset button { padding:3px 9px; font-size:13px; }
   .offset b { color:var(--fg); min-width:40px; text-align:center; }
@@ -227,6 +228,7 @@
   </div>
   <div class="types only-sayi">
     <label><input type="checkbox" value="Hücum" checked> <span data-t="tur_hucum">Hücum</span></label>
+    <label data-it="arka_title" title="Arka sıradaki oyuncunun (3 m gerisinden) hücum sayıları"><input type="checkbox" value="Arka" checked> <span data-t="tur_arka">Arka sıra</span></label>
     <label><input type="checkbox" value="Blok" checked> <span data-t="tur_blok">Blok</span></label>
     <label><input type="checkbox" value="Ace" checked> <span data-t="tur_ace">Ace</span></label>
     <label data-it="dig_title" title="Mükemmel ve iyi dig'ler; ralli kaybedilmiş olabilir"><input type="checkbox" value="Dig" checked> <span data-t="tur_dig">Dig</span></label>
@@ -327,7 +329,7 @@ const MAXROW = 1500;                               // daha fazlası yavaşlatıy
 // iki dil: ?lang= > bu tarayıcıda seçilen > tarayıcının dili (Türkçe değilse İngilizce). Konum (IP) kullanılmaz.
 const I18N = {
   tr: {title: 'Sultanlar Ligi · Sayı ve dig videoları', h1: 'Sayı ve dig videoları', team: 'Takım', match: 'Maç',
-       player: 'Oyuncu', tur_hucum: 'Hücum', tur_blok: 'Blok', tur_ace: 'Ace', tur_dig: 'Dig',
+       player: 'Oyuncu', tur_hucum: 'Hücum', tur_arka: 'Arka sıra', arka_title: 'Arka sıradaki oyuncunun (3 m gerisinden) hücum sayıları', tur_blok: 'Blok', tur_ace: 'Ace', tur_dig: 'Dig',
        dig_title: "Mükemmel ve iyi dig'ler; ralli kaybedilmiş olabilir", delay: 'Yayın gecikmesi',
        delay_title: 'Video erken başlıyorsa +, geç başlıyorsa − (bu tarayıcıda hatırlanır)', auto: 'Sırayla oynat',
        auto_title: 'Ralli bitince listedeki bir sonraki sayıya geç', replay: 'Tekrarı izle',
@@ -336,7 +338,7 @@ const I18N = {
        end: 'Listenin sonu', again: '↺ Baştan', fexit: 'Tam ekrandan çık', fnext: 'Sonraki', fprev: 'Önceki',
        loading: 'Veri yükleniyor…', loading2: 'Yükleniyor…', fail: 'Veri okunamadı: ', all_matches: 'Bütün maçlar',
        novideo_tag: ' (video yok)', novideo: 'Videosuna ulaşamadığımız maçlar: ', all_players: 'Bütün oyuncular',
-       points: n => `${n} sayı`, digs: n => `${n} dig`, n_hucum: n => `${n} hücum sayısı`, n_blok: n => `${n} blok sayısı`, n_ace: n => `${n} Ace`, withvideo: n => `${n} tanesinin videosu var`,
+       points: n => `${n} sayı`, digs: n => `${n} dig`, n_hucum: n => `${n} hücum sayısı`, n_arka: n => `${n} arka sıra hücum sayısı`, n_blok: n => `${n} blok sayısı`, n_ace: n => `${n} Ace`, withvideo: n => `${n} tanesinin videosu var`,
        empty: 'Bu seçimde sayı yok.', set: n => `${n}. set`, novid: 'video yok', copied: 'Link kopyalandı',
        share_x: "X'te paylaş", sec: 'sn', lang_btn: 'EN',
        tab_sayi: "Sayılar ve dig'ler", tab_uzun: 'En uzun ralliler', all_teams: 'Bütün takımlar', week: 'Hafta',
@@ -348,7 +350,7 @@ const I18N = {
        lead: d => `Takım, maç ve oyuncu seç; hücum sayısı, blok sayısı, Ace ve dig'lerin listesi gelir. Satıra tıklayınca ` +
                   `video o ralliden başlar, Önceki / Sonraki ile sayılar arasında geçilir. Son güncelleme ${d}.`},
   en: {title: 'Sultanlar League · Point & dig videos', h1: 'Point & dig videos', team: 'Team', match: 'Match',
-       player: 'Player', tur_hucum: 'Attack', tur_blok: 'Block', tur_ace: 'Ace', tur_dig: 'Dig',
+       player: 'Player', tur_hucum: 'Attack', tur_arka: 'Back row', arka_title: 'Attack points by back-row players (from behind the 3 m line)', tur_blok: 'Block', tur_ace: 'Ace', tur_dig: 'Dig',
        dig_title: 'Perfect and good digs; the rally may have been lost', delay: 'Broadcast delay',
        delay_title: 'If the clip starts early press +, if late − (remembered in this browser)', auto: 'Play next',
        auto_title: 'When the rally ends, go to the next one in the list', replay: 'Watch replay',
@@ -358,7 +360,7 @@ const I18N = {
        loading: 'Loading data…', loading2: 'Loading…', fail: 'Could not load data: ', all_matches: 'All matches',
        novideo_tag: ' (no video)', novideo: 'Matches without video: ', all_players: 'All players',
        points: n => `${n} point${n === 1 ? '' : 's'}`, digs: n => `${n} dig${n === 1 ? '' : 's'}`,
-       n_hucum: n => `${n} attack point${n === 1 ? '' : 's'}`, n_blok: n => `${n} block point${n === 1 ? '' : 's'}`, n_ace: n => `${n} ace${n === 1 ? '' : 's'}`,
+       n_hucum: n => `${n} attack point${n === 1 ? '' : 's'}`, n_arka: n => `${n} back-row attack point${n === 1 ? '' : 's'}`, n_blok: n => `${n} block point${n === 1 ? '' : 's'}`, n_ace: n => `${n} ace${n === 1 ? '' : 's'}`,
        withvideo: n => `${n} with video`, empty: 'Nothing in this selection.', set: n => `Set ${n}`,
        novid: 'no video', copied: 'Link copied', share_x: 'Share on X', sec: 's', lang_btn: 'TR',
        tab_sayi: 'Points & digs', tab_uzun: 'Longest rallies', all_teams: 'All teams', week: 'Week',
@@ -423,7 +425,7 @@ function stateUrl(an, noTeam) {          // noTeam: takım sayfasının adresind
     if ($('match').value) q.set('mac', $('match').value);
     if ($('pl').value) q.set('oyuncu', latin($('pl').value));
     const ty = [...document.querySelectorAll('.types input')];
-    if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked).map(x => fold(x.value)).join(','));
+    if (ty.some(x => !x.checked)) q.set('tur', ty.filter(x => x.checked && !x.disabled).map(x => fold(x.value)).join(','));
   }
   if (an) q.set('an', an);
   q.set('v', KART);
@@ -467,6 +469,7 @@ function applyUrl() {
     const want = q.get('tur').split(',').map(fold);
     document.querySelectorAll('.types input').forEach(x => x.checked = want.includes(fold(x.value)));
   }
+  arkaSync();
   players();
   pick($('pl'), q.get('oyuncu'));
   render();
@@ -502,12 +505,14 @@ function expand(d) {
     return {mac_id, tarih, ev, dep, video, hafta, set, skor, hucum, temas, kazanan: side ? dep : ev, oyuncu: '',
             tur: 'Ralli', saniye: sec, bitis: end, sinir: nx ?? null};
   });
-  return d.satirlar.map(([mi, set, skor, side, pi, ti, sec, end, nx]) => {
+  return d.satirlar.map(([mi, set, skor, side, pi, ti, sec, end, nx, arka]) => {
     const [mac_id, tarih, ev, dep, video, hafta] = d.maclar[mi];
     return {mac_id, tarih, ev, dep, video, hafta, set, skor, takim: side ? dep : ev, oyuncu: d.oyuncular[pi],
-            tur: d.turler[ti], saniye: sec, bitis: end, sinir: nx ?? null};
+            tur: d.turler[ti], saniye: sec, bitis: end, sinir: nx ?? null, arka: !!arka};
   });
 }
+// tür seçimi: "Arka sıra" hücumun alt kümesi (Hücum seçiliyken arka sıra hücumları zaten içinde)
+const typeOk = (r, types) => types.includes(r.tur) || (r.arka && types.includes('Arka'));
 
 function fail(msg) {
   $('sub').textContent = '';
@@ -558,7 +563,7 @@ function players() {
   const team = $('team').value, m = $('match').value, n = new Map();
   const types = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
   ROWS.filter(r => (team === ALL || r.takim === team) && weekOk(r) && (!m || r.mac_id === m))
-      .forEach(r => n.set(r.oyuncu, (n.get(r.oyuncu) || 0) + (types.includes(r.tur) ? 1 : 0)));
+      .forEach(r => n.set(r.oyuncu, (n.get(r.oyuncu) || 0) + (typeOk(r, types) ? 1 : 0)));
   const list = [...n].sort((a, b) => b[1] - a[1]);
   opts($('pl'), [['', t('all_players')], ...list.map(([p, c]) => [p, `${p} (${c})`])], true);
 }
@@ -571,7 +576,8 @@ function counts(rows) {
   const pts = ['Hücum', 'Blok', 'Ace'], c = tur => rows.filter(r => r.tur === tur).length;
   const d = c('Dig'), n = rows.length - d;
   const p = pts.every(x => on.includes(x)) ? [n ? t('points', n) : '']
-          : pts.filter(x => on.includes(x)).map(x => t('n_' + fold(x), c(x)));
+          : [...pts.filter(x => on.includes(x)).map(x => t('n_' + fold(x), c(x))),
+             ...(on.includes('Arka') && !on.includes('Hücum') ? [t('n_arka', rows.filter(r => r.arka).length)] : [])];
   return [...p, d ? t('digs', d) : ''].filter(Boolean).join(' · ') || t('points', 0);
 }
 
@@ -628,7 +634,7 @@ function render() {
   const team = $('team').value, m = $('match').value, p = $('pl').value;
   const types = [...document.querySelectorAll('.types input:checked')].map(x => x.value);
   SHOWN = ROWS.filter(r => (team === ALL || r.takim === team) && weekOk(r) && (!m || r.mac_id === m) &&
-                           (!p || r.oyuncu === p) && types.includes(r.tur));
+                           (!p || r.oyuncu === p) && typeOk(r, types));
   const vid = SHOWN.filter(r => r.saniye !== null).length;
   $('summary').textContent = `${counts(SHOWN)} · ${t('withvideo', vid)}`;
   if (!SHOWN.length) { $('list').innerHTML = `<div class="msg">${t('empty')}</div>`; syncUrl(); return; }
@@ -641,7 +647,7 @@ function render() {
     const url = r.saniye !== null ? `https://www.youtube.com/watch?v=${r.video}&t=${sec(r)}s` : '';
     html += `<div class="row${url ? ' click' : ''}" data-i="${i}"${url ? ' tabindex="0" role="button"' : ''}>
       <span class="muted">${t('set', r.set)}</span><span>${r.skor}</span>
-      <span class="tag t-${r.tur}">${TL(r.tur)}</span><span class="who">${p ? '' : r.oyuncu}</span>
+      <span class="tag t-${r.tur}">${TL(r.arka ? 'Arka' : r.tur)}</span><span class="who">${p ? '' : r.oyuncu}</span>
       ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : `<span class="muted">${t('novid')}</span>`}
     </div>`;
   });
@@ -810,7 +816,14 @@ document.querySelectorAll('.tab').forEach(b => b.onclick = () => {
 });
 $('match').onchange = () => { CUR = -1; players(); render(); };
 $('pl').onchange = () => { CUR = -1; render(); if ($('pl').value) gc('oyuncu/' + $('pl').value); };
-document.querySelectorAll('.types input').forEach(x => x.onchange = () => { CUR = -1; players(); render(); });
+// Arka sıra Hücum'un alt kümesi: Hücum seçiliyken işaretli ve kilitli (gri); Hücum kaldırılınca o da kalkar, ayrıca
+// seçilebilir (sadece arka sıra hücumları)
+function arkaSync() {
+  const h = document.querySelector('.types input[value="Hücum"]'), a = document.querySelector('.types input[value="Arka"]');
+  if (h.checked) { a.checked = true; a.disabled = true; }
+  else { if (a.disabled) a.checked = false; a.disabled = false; }
+}
+document.querySelectorAll('.types input').forEach(x => x.onchange = () => { arkaSync(); CUR = -1; players(); render(); });
 $('prev').onclick = () => step(-1);
 // paylaşılan metin linkle her zaman tutsun (kullanıcının isteği, 21.11.2026): "son hafta" linkte haftanın numarası
 // (shareUrl), metinde "9. hafta"; bütün sezonda sayı paylaşıldığı güne ait: "9. haftaya kadar 61 sayı"
