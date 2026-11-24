@@ -798,7 +798,12 @@ setInterval(() => {
   // en geç sonraki rallinin açılışında (o rallinin servis düdüğü) dur; tekrar beklerken 2 sn önce (oyuncular servise
   // hazırlanırken geçilsin); setin son rallisinde sınır yok
   if (r.sinir != null) end = Math.min(end, Math.max(r.sinir + OFF - (REPLAY ? 2 : 0), sec(r) + Math.max(len, 4)));
-  if (YTP.getCurrentTime() >= end && !FINISHED) step(1);
+  // geçiş sürerken ya da video henüz bu sayının yerine sarılmamışken (konum aralığın çok dışında) bekle: oynarken önceki
+  // bir satıra tıklanınca video bir süre eski yerinde kalıyor, "bitti" sanılıp sıradakilere atlanıyor ve oynayan sayıya
+  // geri dönülüyordu (kullanıcı gördü, 24.11.2026)
+  const now = YTP.getCurrentTime();
+  if (TRANS || now < sec(r) - 3 || now > end + 30) return;
+  if (now >= end && !FINISHED) step(1);
 }, 500);
 
 function step(d) {
