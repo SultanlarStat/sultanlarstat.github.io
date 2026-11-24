@@ -326,7 +326,7 @@
 
 <script>
 let ROWS = [], SHOWN = [], CUR = -1, OFF = 0, UPDATED = null;
-let MODE = 'sayi', RALLIES = [], WEEKS = [];       // sekme; en uzun ralliler; [hafta, ilk gün, son gün]
+let MODE = 'sayi', RALLIES = [], WEEKS = [], SON = null;   // sekme; en uzun ralliler; haftalar (tarihe göre); son hafta
 const ALL = '*';                                   // "Bütün takımlar"
 const MAXROW = 1500;                               // daha fazlası yavaşlatıyor: ilk 1500 satır, "seçimi daraltın"
 // iki dil: ?lang= > bu tarayıcıda seçilen > tarayıcının dili (Türkçe değilse İngilizce). Konum (IP) kullanılmaz.
@@ -345,7 +345,9 @@ const I18N = {
        empty: 'Bu seçimde sayı yok.', set: n => `${n}. set`, novid: 'video yok', copied: 'Link kopyalandı',
        share_x: "X'te paylaş", sec: 'sn', lang_btn: 'EN',
        tab_sayi: "Sayılar ve dig'ler", tab_uzun: 'En uzun ralliler', all_teams: 'Bütün takımlar', week: 'Hafta',
-       all_season: 'Bütün sezon', upto: (n, c) => `${n}. haftaya kadar ${c}`.trim(), latest_week: n => `Son hafta (${n}. hafta)`, week_n: (n, r) => `${n}. hafta · ${r}`, kac: 'Kaç ralli',
+       all_season: 'Bütün sezon', upto: (n, c) => `${n}. haftaya kadar ${c}`.trim(), latest_week: (n, r, ek) => `Son hafta (${n}. hafta · ${r}${ek ? ` + ${ek} maç` : ''})`, week_n: (n, r) => `${n}. hafta · ${r}`,
+       w_one: k => `(öne alınan ${k} maç)`,
+       w_sapan: xs => '(' + xs.map(x => `+ ${x.d}'de ${x.tur === 'ertelenen' ? 'ertelenen' : 'öne alınan'} 1 maç`).join(', ') + ')', kac: 'Kaç ralli',
        len: (h, m) => `${h} hücum · ${m} temas`, rank: k => `En uzun ${k}. ralli`, rallies: n => `${n} ralli`,
        uzun_sum: n => `En uzun ${n} ralli · hücum sayısına göre, eşitlikte temas`, h_date: 'Tarih', h_match: 'Maç',
        h_set: 'Set · skor', h_len: 'Uzunluk', h_won: 'Kazanan',
@@ -367,7 +369,9 @@ const I18N = {
        withvideo: n => `${n} with video`, empty: 'Nothing in this selection.', set: n => `Set ${n}`,
        novid: 'no video', copied: 'Link copied', share_x: 'Share on X', sec: 's', lang_btn: 'TR',
        tab_sayi: 'Points & digs', tab_uzun: 'Longest rallies', all_teams: 'All teams', week: 'Week',
-       all_season: 'Whole season', upto: (n, c) => `${c} through week ${n}`.trim(), latest_week: n => `Latest week (week ${n})`, week_n: (n, r) => `Week ${n} · ${r}`, kac: 'How many',
+       all_season: 'Whole season', upto: (n, c) => `${c} through week ${n}`.trim(), latest_week: (n, r, ek) => `Latest week (week ${n} · ${r}${ek ? ` + ${ek} match${ek > 1 ? 'es' : ''}` : ''})`, week_n: (n, r) => `Week ${n} · ${r}`,
+       w_one: k => `(${k} match${k > 1 ? 'es' : ''} brought forward)`,
+       w_sapan: xs => '(' + xs.map(x => `+ 1 ${x.tur === 'ertelenen' ? 'postponed' : 'brought-forward'} match on ${x.d}`).join(', ') + ')', kac: 'How many',
        len: (h, m) => `${h} attacks · ${m} contacts`, rank: k => `Longest rally #${k}`,
        rallies: n => `${n} rall${n === 1 ? 'y' : 'ies'}`, uzun_sum: n => `Longest ${n} rallies · by attacks, then contacts`,
        h_date: 'Date', h_match: 'Match', h_set: 'Set · score', h_len: 'Length', h_won: 'Won by',
@@ -405,10 +409,14 @@ function pick(sel, want) {
   return !!hit;
 }
 const teamName = v => v === ALL ? t('all_teams') : v;
-// hafta seçimi: '' bütün sezon, 'son' her zaman en son hafta (linkte hafta=son: yeni hafta gelince kendiliğinden), sayı
+// hafta seçimi: '' bütün sezon, 'son' her zaman en son hafta (linkte hafta=son: yeni hafta gelince kendiliğinden), sayı.
+// Son hafta = en son oynanan tam hafta (en az 3 maç) + o haftanın ilk gününden sonra oynanan başka haftaların maçları
+// (öne alınan / ertelenen); "en büyük hafta numarası" değil: öne alınan tek maç son hafta görünüyordu (kullanıcı gördü,
+// Efeler 11. hafta 03.11; 24.11.2026)
 const LAST = 'son';
-const weekNo = () => $('week').value === LAST ? String(WEEKS.length ? WEEKS[WEEKS.length - 1][0] : '') : $('week').value;
-const weekOk = r => !$('week').value || String(r.hafta) === weekNo();
+const weekNo = () => $('week').value === LAST ? String(SON ? SON.n : '') : $('week').value;
+const weekOk = r => !$('week').value || ($('week').value === LAST ? SON && (r.hafta === SON.n || r.tarih >= SON.a)
+                                                                  : String(r.hafta) === $('week').value);
 // tek bir sayının kimliği (linkte an=): maç_set_skor_tür
 const clipId = r => `${r.mac_id}_${r.set}_${r.skor}_${fold(r.tur)}`;
 
@@ -499,10 +507,22 @@ async function share(url, text) {
 
 // küçük JSON'u satır nesnelerine açar (sayi_videolari.py: maclar / oyuncular / turler / satirlar)
 function expand(d) {
-  const wk = {};
-  d.maclar.forEach(([, tarih, , , , h]) => { if (h) wk[h] = [h, wk[h] ? wk[h][1] < tarih ? wk[h][1] : tarih : tarih,
-                                                             wk[h] ? wk[h][2] > tarih ? wk[h][2] : tarih : tarih]; });
-  WEEKS = Object.values(wk).sort((a, b) => a[0] - b[0]);
+  // haftalar kaynaktaki hafta (tur) numarasıyla; asıl günleri ortanca tarihin ±3 günü, dışında kalan maçlar ertelenen /
+  // öne alınan; haftanın tamamı (≤ 2 maç) önceki bir hafta oynanmadan ya da ondan önce oynanmışsa öne alınan hafta
+  const wk = {}, gun = s => Date.parse(s) / 864e5;
+  d.maclar.forEach(([, tarih, , , , h]) => { if (h) (wk[h] = wk[h] || []).push(tarih); });
+  WEEKS = Object.entries(wk).map(([n, ds]) => {
+    ds.sort(); const med = gun(ds[Math.floor(ds.length / 2)]);
+    const ana = ds.filter(x => Math.abs(gun(x) - med) <= 3), dis = ds.filter(x => Math.abs(gun(x) - med) > 3);
+    return {n: +n, a: ana[0], b: ana[ana.length - 1], kac: ds.length,
+            sapan: dis.map(x => ({d: x, tur: x > ana[ana.length - 1] ? 'ertelenen' : 'one'}))};
+  });
+  WEEKS.forEach(w => { w.one = w.kac <= 2 && WEEKS.some(v => v.n < w.n && v.kac > 2 && v.a > w.b) ||
+                               w.kac <= 2 && [...Array(w.n - 1).keys()].some(i => !wk[i + 1]); });
+  WEEKS.sort((x, y) => x.a < y.a ? -1 : x.a > y.a ? 1 : x.n - y.n);
+  const tam = WEEKS.filter(w => !w.one && w.kac > 2);
+  SON = tam.length ? tam[tam.length - 1] : WEEKS[WEEKS.length - 1] || null;
+  if (SON) SON.ek = d.maclar.filter(([, tarih, , , , h]) => h !== SON.n && tarih >= SON.a).length;
   RALLIES = (d.ralliler || []).map(([mi, set, skor, hucum, temas, side, sec, end, nx]) => {
     const [mac_id, tarih, ev, dep, video, hafta] = d.maclar[mi];
     return {mac_id, tarih, ev, dep, video, hafta, set, skor, hucum, temas, kazanan: side ? dep : ev, oyuncu: '',
@@ -542,9 +562,10 @@ function teams() {
 }
 function weeks() {
   const d = s => s.slice(8, 10) + '.' + s.slice(5, 7);
-  const ws = WEEKS.map(([n, a, b]) => [String(n), t('week_n', n, a === b ? d(a) : `${d(a)}–${d(b)}`)]).reverse();
-  const last = WEEKS.length ? WEEKS[WEEKS.length - 1][0] : '';
-  opts($('week'), [['', t('all_season')], ...(last ? [[LAST, t('latest_week', last)]] : []), ...ws], true);
+  const ara = w => w.a === w.b ? d(w.a) : `${d(w.a)}–${d(w.b)}`;
+  const not = w => w.one ? ' ' + t('w_one', w.kac) : w.sapan.length ? ' ' + t('w_sapan', w.sapan.map(x => ({...x, d: d(x.d)}))) : '';
+  const ws = WEEKS.map(w => [String(w.n), t('week_n', w.n, ara(w)) + not(w)]).reverse();
+  opts($('week'), [['', t('all_season')], ...(SON ? [[LAST, t('latest_week', SON.n, ara(SON), SON.ek)]] : []), ...ws], true);
 }
 
 function matches() {
@@ -839,7 +860,7 @@ $('sharelist').onclick = () => {
   const p = $('pl').value, m = $('match'), w = $('week'), wn = weekNo();
   const wo = [...w.options].find(o => o.value === wn);
   const wt = w.value ? (wo || w.options[w.selectedIndex]).text : '';
-  const upto = !w.value && !(MODE === 'sayi' && m.value) && WEEKS.length, last = upto && WEEKS[WEEKS.length - 1][0];
+  const upto = !w.value && !(MODE === 'sayi' && m.value) && WEEKS.length, last = upto && SON && SON.n;
   share(shareUrl(), (MODE === 'uzun' ? [t('tab_uzun'), teamName($('team').value), wt || (upto ? t('upto', last, '') : '')]
                      : [p || teamName($('team').value), wt, m.value ? m.options[m.selectedIndex].text : '',
                         upto ? t('upto', last, counts(SHOWN)) : counts(SHOWN)])
