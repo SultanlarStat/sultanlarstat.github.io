@@ -90,6 +90,9 @@
   .types { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:6px 0 10px; font-size:14px; }
   .types label { display:inline-flex; gap:5px; align-items:center; color:var(--fg); font-size:14px; margin:0; }
   .types label:has(input:disabled) { opacity:.45; }
+  /* Arka sıra Hücum'un alt kümesi: ikisi açık gri bir zeminde birlikte (kullanıcının isteği, 24.11.2026) */
+  .types .grp { display:inline-flex; gap:10px; align-items:center; padding:2px 8px;
+    border-radius:8px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.10); }
   .offset { display:inline-flex; gap:5px; align-items:center; font-size:13px; color:var(--mute); white-space:nowrap; }
   .offset button { padding:3px 9px; font-size:13px; }
   .offset b { color:var(--fg); min-width:40px; text-align:center; }
@@ -227,8 +230,8 @@
       <select id="kac"><option>10</option><option selected>20</option><option>50</option></select></div>
   </div>
   <div class="types only-sayi">
-    <label><input type="checkbox" value="Hücum" checked> <span data-t="tur_hucum">Hücum</span></label>
-    <label data-it="arka_title" title="Arka sıradaki oyuncunun (3 m gerisinden) hücum sayıları"><input type="checkbox" value="Arka" checked> <span data-t="tur_arka">Arka sıra</span></label>
+    <span class="grp"><label><input type="checkbox" value="Hücum" checked> <span data-t="tur_hucum">Hücum</span></label>
+    <label data-it="arka_title" title="Arka sıradaki oyuncunun (3 m gerisinden) hücum sayıları"><input type="checkbox" value="Arka" checked> <span data-t="tur_arka">Arka sıra</span></label></span>
     <label><input type="checkbox" value="Blok" checked> <span data-t="tur_blok">Blok</span></label>
     <label><input type="checkbox" value="Ace" checked> <span data-t="tur_ace">Ace</span></label>
     <label data-it="dig_title" title="Mükemmel ve iyi dig'ler; ralli kaybedilmiş olabilir"><input type="checkbox" value="Dig" checked> <span data-t="tur_dig">Dig</span></label>
