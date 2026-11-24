@@ -597,9 +597,6 @@ function bindRows() {
     el.onclick = () => play(+el.dataset.i);
     el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(+el.dataset.i); } };
   });
-  document.querySelectorAll('a[data-yt]').forEach(a => a.onclick = e => {
-    e.stopPropagation(); gc('youtube/' + (SHOWN[+a.dataset.yt].oyuncu || 'ralli'));
-  });
 }
 
 // En uzun ralliler: hücum sayısına göre (eşitlikte temas), seçili takım / hafta, ilk N
@@ -621,7 +618,7 @@ function renderUzun() {
       <span class="d">${t('set', r.set)} ${r.skor}</span>
       <span><b>${t('len', r.hucum, r.temas)}</b><div class="bar"><i style="width:${Math.round(100 * r.hucum / mx)}%"></i></div></span>
       <span class="w">${r.kazanan}</span>
-      ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : `<span class="muted">${t('novid')}</span>`}
+      ${url ? '<span></span>' : `<span class="muted">${t('novid')}</span>`}
     </div>`;
   });
   $('list').innerHTML = html;
@@ -648,7 +645,7 @@ function render() {
     html += `<div class="row${url ? ' click' : ''}" data-i="${i}"${url ? ' tabindex="0" role="button"' : ''}>
       <span class="muted">${t('set', r.set)}</span><span>${r.skor}</span>
       <span class="tag t-${r.tur}">${TL(r.arka ? 'Arka' : r.tur)}</span><span class="who">${p ? '' : r.oyuncu}</span>
-      ${url ? `<a href="${url}" data-yt="${i}">YouTube ↗</a>` : `<span class="muted">${t('novid')}</span>`}
+      ${url ? '<span></span>' : `<span class="muted">${t('novid')}</span>`}
     </div>`;
   });
   if (SHOWN.length > MAXROW) html += `<div class="msg">${t('toomany', MAXROW)}</div>`;
